@@ -1,0 +1,30 @@
+{
+  "name": "tiny-game-heaven",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "games/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "dev:bangaljuk": "npm run dev -w bangaljuk",
+    "dev:chosung": "npm run dev -w chosung",
+    "dev:cheonjiin": "npm run dev -w cheonjiin",
+    "dev:yeolgong": "npm run dev -w yeolgong",
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "prettier": "^3.9.10",
+    "typescript": "^5.9.3",
+    "vite": "^8.3.6",
+    "vitest": "^4.1.12"
+  }
+}
