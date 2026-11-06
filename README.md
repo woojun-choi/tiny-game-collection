@@ -56,7 +56,7 @@ npm run format           # Prettier
 
 - 게임은 `games/<이름>/`마다 독립된 Vite 앱이다. 공용 코드는 `@tgh/hangul`, `@tgh/ui`처럼 `packages/`에서 가져온다.
 - 공용 패키지는 빌드 없이 TypeScript 소스를 그대로 내보내고, 각 게임의 Vite가 함께 번들한다.
-- 게임마다 별도로 배포한다. 각 게임의 `vercel.json`은 해당 게임이나 공용 코드가 바뀌지 않았으면 빌드를 건너뛴다.
+- 게임마다 별도로 배포한다. 각 게임의 `vercel.json`은 의존성을 저장소 루트에서 설치하고, 마지막 배포 이후 해당 게임이나 공용 코드가 바뀌지 않았으면 빌드를 건너뛴다.
 - 사전 데이터 처리 방식은 [`packages/dict-pipeline`](packages/dict-pipeline/README.md) 참고.
 
 ## 문서
