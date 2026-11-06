@@ -22,15 +22,16 @@ export function extractHeadwords(text: string): string[] {
   return out;
 }
 
-/** 한국어기초사전 LMF XML: 표제어와 어휘 등급(초급 1, 중급 2, 고급 3, 없음 4). */
-export function extractBasic(text: string): [string, number][] {
-  const out: [string, number][] = [];
+/** 한국어기초사전 LMF XML: 표제어, 어휘 등급(초급 1, 중급 2, 고급 3, 없음 4), 품사. */
+export function extractBasic(text: string): [string, number, string][] {
+  const out: [string, number, string][] = [];
   for (const m of text.matchAll(/<LexicalEntry[\s\S]*?<\/LexicalEntry>/g)) {
     const block = m[0];
     const word = /att="writtenForm" val="([^"]+)"/.exec(block)?.[1];
     if (!word) continue;
     const level = /att="vocabularyLevel" val="([^"]+)"/.exec(block)?.[1];
-    out.push([word, level === '초급' ? 1 : level === '중급' ? 2 : level === '고급' ? 3 : 4]);
+    const pos = /att="partOfSpeech" val="([^"]+)"/.exec(block)?.[1] ?? '';
+    out.push([word, level === '초급' ? 1 : level === '중급' ? 2 : level === '고급' ? 3 : 4, pos]);
   }
   return out;
 }

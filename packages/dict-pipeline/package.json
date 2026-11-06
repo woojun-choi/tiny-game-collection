@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "fetch": "sh fetch-nikl.sh",
-    "build:chosung": "node src/build-chosung.ts"
+    "build:chosung": "node src/build-chosung.ts",
+    "build:cheonjiin": "node src/build-cheonjiin.ts"
   },
   "dependencies": {
     "@tgh/hangul": "*"

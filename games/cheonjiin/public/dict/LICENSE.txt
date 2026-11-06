@@ -1,0 +1,4 @@
+이 폴더의 단어 목록은 국립국어원 표준국어대사전·한국어기초사전·우리말샘의 표제어를 가공한 것입니다.
+원본: https://stdict.korean.go.kr, https://krdict.korean.go.kr, https://opendict.korean.go.kr
+라이선스: 크리에이티브 커먼즈 저작자표시-동일조건변경허락 2.0 대한민국 (CC BY-SA 2.0 KR)
+https://creativecommons.org/licenses/by-sa/2.0/kr/

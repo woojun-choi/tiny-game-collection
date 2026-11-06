@@ -19,13 +19,13 @@ describe('extract', () => {
     expect(extractHeadwords('<wordInfo><word><![CDATA[가-다]]></word>')).toEqual(['가-다']);
   });
 
-  it('기초사전 LMF에서 표제어와 등급을 찾는다', () => {
+  it('기초사전 LMF에서 표제어와 등급, 품사를 찾는다', () => {
     const xml = `<LexicalEntry><Lemma><feat att="writtenForm" val="가방"/></Lemma>
-      <feat att="vocabularyLevel" val="초급"/></LexicalEntry>
+      <feat att="partOfSpeech" val="명사"/><feat att="vocabularyLevel" val="초급"/></LexicalEntry>
       <LexicalEntry><Lemma><feat att="writtenForm" val="가사"/></Lemma></LexicalEntry>`;
     expect(extractBasic(xml)).toEqual([
-      ['가방', 1],
-      ['가사', 4],
+      ['가방', 1, '명사'],
+      ['가사', 4, ''],
     ]);
   });
 });

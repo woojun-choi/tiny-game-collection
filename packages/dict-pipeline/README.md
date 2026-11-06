@@ -19,4 +19,10 @@ npm run build:chosung -w @tgh/dict-pipeline
 
 ## 천지인
 
-`games/cheonjiin/public/dict/` (전체 단어 목록 + 판 생성용 상용어 목록) — 아직 없음.
+```sh
+npm run build:cheonjiin -w @tgh/dict-pipeline
+```
+
+- **정답 인정(`words.txt`):** 표준국어대사전·한국어기초사전의 2~4음절 표제어 전부, 그리고 ㄱㅅ와 같은 기준으로 우리말샘의 2음절 표제어. 우리말샘 3~4음절까지 넣으면 gzip 2MB가 넘어서 뺐다(지금 약 1MB).
+- **판 생성(`common.json`):** 한국어기초사전의 초급·중급 명사. 판에 심는 단어는 익숙한 말이어야 한다.
+- 출력: `games/cheonjiin/public/dict/words.txt`, `common.json`
