@@ -3,11 +3,116 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="드래그 한 번으로 물체를 정확히 반으로 가르는 게임" />
+    <meta name="theme-color" content="#f7f4ee" />
     <title>반갈죽</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Space+Mono:wght@700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
+    />
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
-    <canvas id="game"></canvas>
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <symbol id="spark" viewBox="-1 -1 2 2">
+        <path d="M0 -1Q0 0 1 0Q0 0 0 1Q0 0 -1 0Q0 0 0 -1Z" />
+      </symbol>
+      <!-- 칼 그림은 src/knife.ts에서 채운다 -->
+      <symbol id="knife" viewBox="0 0 164 44"></symbol>
+    </svg>
+
+    <section id="title" class="screen">
+      <div class="hero">
+        <svg class="spark sp1" aria-hidden="true"><use href="#spark" /></svg>
+        <svg class="spark sp2" aria-hidden="true"><use href="#spark" /></svg>
+        <svg class="spark sp3 outline" aria-hidden="true"><use href="#spark" /></svg>
+        <svg class="knife" aria-hidden="true"><use href="#knife" /></svg>
+        <h1 class="logo">반갈죽</h1>
+        <p class="tagline">cut it right in half ↘</p>
+      </div>
+      <p class="hint">드래그해서 정확히 반으로 갈라보세요</p>
+      <button id="start" class="btn primary" type="button">
+        <svg class="spark-i" aria-hidden="true"><use href="#spark" /></svg>
+        <span>시작</span>
+        <svg class="spark-i" aria-hidden="true"><use href="#spark" /></svg>
+      </button>
+      <p id="title-best" class="best" hidden></p>
+      <a class="link" href="https://uzun-choi.com">uzun-choi.com ↗</a>
+    </section>
+
+    <section id="play" class="screen" hidden>
+      <header class="hud">
+        <span id="round" class="box mono">1/5</span>
+        <div class="hud-title">
+          <strong>반갈죽</strong>
+          <span id="badge" class="level">쉬움</span>
+        </div>
+        <span class="face" aria-hidden="true">
+          <svg viewBox="0 0 164 44"><use href="#knife" /></svg>
+        </span>
+      </header>
+
+      <div id="stage" class="stage">
+        <svg class="spark st1" aria-hidden="true"><use href="#spark" /></svg>
+        <svg class="spark st2 outline" aria-hidden="true"><use href="#spark" /></svg>
+        <canvas id="canvas" aria-label="자를 물체. 드래그해서 자르세요."></canvas>
+        <p id="miss" class="miss" role="status" hidden></p>
+        <div id="judge" class="judge" hidden>
+          <p id="ratio" class="ratio mono"></p>
+          <span id="stamp" class="stamp mono">S</span>
+        </div>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress"><span id="progress-fill"></span></div>
+        <div class="progress-labels mono"><span>1</span><span>5 round</span></div>
+      </div>
+
+      <div class="below">
+        <p id="reaction" class="reaction" aria-live="polite"></p>
+        <button id="next" class="btn primary" type="button" hidden>
+          <svg class="spark-i" aria-hidden="true"><use href="#spark" /></svg>
+          <span id="next-label">다음</span>
+          <svg class="spark-i" aria-hidden="true"><use href="#spark" /></svg>
+        </button>
+      </div>
+    </section>
+
+    <section id="result" class="screen" hidden>
+      <div class="result-hero">
+        <svg class="spark rs1" aria-hidden="true"><use href="#spark" /></svg>
+        <svg class="spark rs2 outline" aria-hidden="true"><use href="#spark" /></svg>
+        <span id="r-stamp" class="stamp big mono">A</span>
+      </div>
+      <p id="r-reaction" class="reaction"></p>
+      <p class="avg">
+        평균 오차 <strong id="r-avg" class="mono">0.0</strong><span class="mono">%</span>
+      </p>
+      <ol id="r-grades" class="grades mono"></ol>
+      <p class="best">
+        <span id="r-best"></span>
+        <span id="r-record" class="record" hidden>신기록!</span>
+      </p>
+      <div class="actions">
+        <button id="again" class="btn primary wide" type="button">
+          <svg class="spark-i" aria-hidden="true"><use href="#spark" /></svg>
+          <span>다시하기</span>
+          <svg class="spark-i" aria-hidden="true"><use href="#spark" /></svg>
+        </button>
+        <div class="row">
+          <button id="share" class="btn" type="button">결과 공유</button>
+          <a class="btn" href="https://uzun-choi.com">포트폴리오로</a>
+        </div>
+      </div>
+      <p id="toast" class="toast" role="status"></p>
+    </section>
+
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <title>반갈죽 물체 갤러리 (개발용)</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 16px;
+        background: #f7f4ee;
+        font-family: system-ui;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(6, 160px);
+        gap: 12px;
+      }
+      figure {
+        margin: 0;
+        text-align: center;
+        font-size: 13px;
+      }
+      canvas {
+        width: 160px;
+        height: 160px;
+        background: #fffdf8;
+        border: 2px solid #111;
+        border-radius: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="grid" id="grid"></div>
+    <script type="module" src="/src/gallery.ts"></script>
+  </body>
+</html>
