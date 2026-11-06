@@ -2,7 +2,21 @@
 
 국립국어원 사전 데이터를 게임용 사전 파일로 가공하는 빌드 스크립트 (ㄱㅅ, 천지인 공용).
 
-- 원본 데이터는 `raw/`에 직접 내려받아 둔다. 저장소에는 올리지 않는다(`.gitignore`).
+- 원본 데이터는 `raw/`에 직접 내려받아 둔다(zip은 풀어서). 저장소에는 올리지 않는다(`.gitignore`).
 - 결과물은 각 게임의 `public/dict/`에 생성하고 커밋한다. 배포 환경에는 원본 데이터가 없으므로 Vercel 빌드에서는 이 스크립트를 실행하지 않는다.
-  - ㄱㅅ: `games/chosung/public/dict/index.json`, `games/chosung/public/dict/<초성쌍>.json`
-  - 천지인: `games/cheonjiin/public/dict/` (전체 단어 목록 + 판 생성용 상용어 목록)
+
+## ㄱㅅ
+
+```sh
+npm run build:chosung -w @tgh/dict-pipeline
+```
+
+- **정답 인정은 넓게:** 우리말샘·표준국어대사전의 두 음절 표제어를 품사·방언·옛말·북한어 구분 없이 전부 받는다.
+- **흔한 단어 순위:** 한국어기초사전(LMF XML)이 있으면 어휘 등급(초급 → 중급 → 고급)으로 순위를 매긴다. 결과 화면의 '놓친 단어'는 이 순서로 보여준다.
+- **출제 대상:** 흔한 단어가 25개 이상인 초성 쌍. 기초사전이 없으면 전체 80단어 이상인 쌍.
+- `extra.txt`: 사전에 없는 단어를 직접 보탠다(한 줄에 하나).
+- 출력: `games/chosung/public/dict/index.json`, `<초성 인덱스>-<초성 인덱스>.json` (예: ㄱㅅ → `0-9.json`)
+
+## 천지인
+
+`games/cheonjiin/public/dict/` (전체 단어 목록 + 판 생성용 상용어 목록) — 아직 없음.

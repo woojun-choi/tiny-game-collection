@@ -62,3 +62,7 @@ npm run format           # Prettier
 ## 문서
 
 - 게임별 기획서(영문): [`prds/`](prds/)
+
+## 사전 데이터 출처
+
+ㄱㅅ의 단어 목록(`games/chosung/public/dict/`)은 국립국어원 [우리말샘](https://opendict.korean.go.kr)·[표준국어대사전](https://stdict.korean.go.kr)·[한국어기초사전](https://krdict.korean.go.kr)의 표제어를 가공한 것으로, [CC BY-SA 2.0 KR](https://creativecommons.org/licenses/by-sa/2.0/kr/)을 따른다. 원본 XML은 [spellcheck-ko/korean-dict-nikl](https://github.com/spellcheck-ko/korean-dict-nikl) 미러에서 받는다(`npm run fetch -w @tgh/dict-pipeline`).

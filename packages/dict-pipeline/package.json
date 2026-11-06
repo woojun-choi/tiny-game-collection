@@ -1,5 +1,12 @@
 {
   "name": "@tgh/dict-pipeline",
   "private": true,
-  "type": "module"
+  "type": "module",
+  "scripts": {
+    "fetch": "sh fetch-nikl.sh",
+    "build:chosung": "node src/build-chosung.ts"
+  },
+  "dependencies": {
+    "@tgh/hangul": "*"
+  }
 }
