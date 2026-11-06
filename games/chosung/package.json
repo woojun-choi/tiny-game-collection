@@ -7,5 +7,9 @@
     "build": "tsc -p . && vite build",
     "preview": "vite preview",
     "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@tgh/hangul": "*",
+    "@tgh/ui": "*"
   }
 }

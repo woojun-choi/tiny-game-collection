@@ -2,12 +2,129 @@
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ㄱㅅ</title>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content"
+    />
+    <meta name="description" content="초성 두 글자에 맞는 단어를 계속 입력하는 생존 게임" />
+    <title>ㄱㅅ 초성게임</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
+    />
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
-    <div id="app"></div>
+    <div class="page">
+      <header class="top">
+        <p class="crumb">
+          <a href="https://uzun-choi.com">uzun-choi.com</a> / <strong>ㄱㅅ 초성게임</strong>
+        </p>
+      </header>
+
+      <section id="title" class="screen split">
+        <div class="col hero">
+          <p class="kicker mono">No.02 — 초성 게임</p>
+          <h1 class="logo" aria-label="ㄱㅅ"><span>ㄱ</span><span>ㅅ</span></h1>
+        </div>
+        <div class="col">
+          <p class="lead">초성 두 글자에 맞는 단어를<br />시간이 다 될 때까지 계속 입력하세요.</p>
+          <ul class="rules">
+            <li><b class="mono">+3s</b> 정답</li>
+            <li><b class="mono">−1s</b> 사전에 없는 말</li>
+            <li><b class="mono">×2</b> 갈수록 빨라짐</li>
+          </ul>
+          <div class="start-row">
+            <button id="start" class="btn primary" type="button">시작 →</button>
+            <p id="title-best" class="meta" hidden></p>
+          </div>
+          <p id="title-error" class="meta" role="alert" hidden></p>
+        </div>
+      </section>
+
+      <section id="game" class="screen" hidden>
+        <div class="timer wide" id="timer">
+          <div class="timer-bar"><span id="timer-fill"></span></div>
+          <span id="timer-num" class="timer-num mono">15.0</span>
+        </div>
+        <div class="col stage">
+          <div class="stage-labels">
+            <span>초성</span>
+            <span id="count" class="mono">0단어</span>
+          </div>
+          <div class="pair" id="pair" aria-live="off"></div>
+        </div>
+        <div class="col entry-col">
+          <div class="entry-block">
+            <form id="form" class="entry" autocomplete="off">
+              <input
+                id="input"
+                type="text"
+                lang="ko"
+                aria-label="단어 입력"
+                placeholder="단어 입력"
+                autocapitalize="off"
+                autocorrect="off"
+                spellcheck="false"
+                enterkeyhint="send"
+              />
+              <button id="submit" class="btn primary" type="button">입력</button>
+            </form>
+            <p id="feedback" class="feedback" aria-live="polite"></p>
+          </div>
+          <ul id="chips" class="chips"></ul>
+        </div>
+      </section>
+
+      <section id="result" class="screen split" hidden>
+        <div class="col">
+          <div class="result-head">
+            <p class="kicker mono">결과</p>
+            <h1 class="result-title">
+              <span id="r-pair" class="r-pair"></span>
+              <span class="score"><span id="r-score" class="mono">0</span>단어</span>
+            </h1>
+            <p class="meta">
+              <span id="r-best"></span>
+              <span id="r-record" class="tag solid" hidden>신기록</span>
+            </p>
+          </div>
+
+          <div class="actions" role="group" aria-label="다음 행동">
+            <button id="again" class="seg primary" type="button">다시하기</button>
+            <button id="same" class="seg" type="button">같은 초성으로</button>
+            <button id="share" class="seg" type="button">공유</button>
+          </div>
+        </div>
+
+        <div class="col">
+          <div class="group">
+            <h2 class="section-title">찾은 단어</h2>
+            <ul id="r-found" class="chips"></ul>
+          </div>
+
+          <div class="group">
+            <h2 id="r-missed-title" class="section-title">이런 단어도 있었어요</h2>
+            <ul id="r-missed" class="chips missed"></ul>
+            <p id="r-coverage" class="meta"></p>
+          </div>
+        </div>
+      </section>
+
+      <footer class="credit">
+        사전: 국립국어원 우리말샘·표준국어대사전·한국어기초사전 ·
+        <a href="https://creativecommons.org/licenses/by-sa/2.0/kr/">CC BY-SA 2.0 KR</a>
+      </footer>
+
+      <p id="toast" class="toast" role="status"></p>
+    </div>
+
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

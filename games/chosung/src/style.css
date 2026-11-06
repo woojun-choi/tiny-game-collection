@@ -1,5 +1,623 @@
+/*
+ * 간격의 리듬: 같은 그룹 안은 가깝게(6~14px), 그룹 사이는 넉넉하게(40~64px).
+ * 모서리는 전부 직각. 색: 먹과 종이 + 보조 글씨용 회색 하나.
+ */
+:root {
+  --ink: #0c0a09;
+  --paper: #fafaf9;
+  --muted: #78716c;
+  --fg: var(--ink);
+  --bg: var(--paper);
+  --line: 1.5px;
+  --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #fafaf9;
+    --paper: #0c0a09;
+    --muted: #a8a29e;
+    color-scheme: dark;
+  }
+}
+
+.invert {
+  --fg: var(--paper);
+  --bg: var(--ink);
+}
+
+* {
+  box-sizing: border-box;
+  border-radius: 0;
+}
+
+[hidden] {
+  display: none !important;
+}
+
 html,
 body {
   margin: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'Pretendard Variable', Pretendard, system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-tap-highlight-color: transparent;
+}
+
+a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+
+.mono {
+  font-family: var(--mono);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.page {
+  width: min(100%, 560px);
+  margin: 0 auto;
+  padding: 28px 20px 64px;
+}
+
+/* ---------- 상단 ---------- */
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 48px;
+}
+
+.crumb {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.crumb strong {
+  color: var(--fg);
+}
+
+.tag {
+  display: inline-block;
+  padding: 0 6px;
+  border: 1px solid var(--muted);
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+.tag.solid {
+  border-color: var(--fg);
+  background: var(--fg);
+  color: var(--bg);
+  font-weight: 700;
+}
+
+/* ---------- 공통 ---------- */
+.kicker {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: 0 22px;
+  border: var(--line) solid var(--fg);
+  background: var(--bg);
+  color: var(--fg);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.btn.primary {
+  background: var(--fg);
+  color: var(--bg);
+}
+
+.btn:active,
+.seg:active {
+  transform: translateY(1px);
+}
+
+.btn:focus-visible,
+.seg:focus-visible,
+a:focus-visible {
+  outline: var(--line) dashed var(--fg);
+  outline-offset: 3px;
+}
+
+/* ---------- 타이틀 ---------- */
+.logo {
+  margin: 12px 0 0;
+  font-size: min(42vw, 220px);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.05em;
+}
+
+.lead {
+  margin: 28px 0 0;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.55;
+}
+
+.rules {
+  margin: 32px 0 0;
+  padding: 0;
+  list-style: none;
+  border-bottom: 1px solid var(--fg);
+}
+
+.rules li {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid var(--fg);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.rules b {
+  font-weight: 600;
+}
+
+.start-row {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+#start {
+  width: 100%;
+  min-height: 56px;
+  font-size: 17px;
+}
+
+#title-error {
+  margin-top: 12px;
+}
+
+/* ---------- 게임 ---------- */
+.timer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.timer-bar {
+  flex: 1;
+  height: 10px;
+  border: var(--line) solid var(--fg);
+  overflow: hidden;
+}
+
+#timer-fill {
+  display: block;
   height: 100%;
+  background: var(--fg);
+  transform-origin: left;
+}
+
+.timer-num {
+  min-width: 4.5ch;
+  margin-right: -4px; /* 위험 상태의 반전 배경 여백만큼, 평소 숫자는 오른쪽 선에 맞춘다 */
+  padding: 0 4px;
+  font-size: 20px;
+  font-weight: 600;
+  text-align: right;
+}
+
+.danger .timer-bar {
+  animation: pulse 1s ease-in-out infinite;
+}
+
+.danger .timer-num {
+  background: var(--fg);
+  color: var(--bg);
+}
+
+@keyframes pulse {
+  50% {
+    transform: scaleY(1.6);
+  }
+}
+
+/* +3s / −1s: 타이머 숫자 아래에 붙어 떠오른다 */
+.float {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  padding: 0 4px;
+  background: var(--fg);
+  color: var(--bg);
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.stage {
+  margin-top: 40px;
+  padding-top: 12px;
+  border-top: var(--line) solid var(--fg);
+}
+
+.stage-labels {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.stage-labels .mono {
+  color: var(--fg);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.pair {
+  margin: 32px 0 16px;
+  font-size: min(40vw, 200px);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.05em;
+  text-align: center;
+}
+
+.pair.breathe {
+  animation: breathe 2.4s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  50% {
+    transform: scale(1.015);
+  }
+}
+
+.entry-block {
+  margin-top: 32px;
+}
+
+.entry {
+  display: flex;
+}
+
+#input {
+  flex: 1;
+  min-width: 0;
+  height: 56px;
+  padding: 0 14px;
+  border: var(--line) solid var(--fg);
+  border-right: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: inherit;
+  font-size: 22px; /* 16px 미만이면 iOS가 확대한다 */
+  font-weight: 700;
+  outline: none; /* 게임 중엔 늘 포커스 상태: 캐럿으로 충분 */
+}
+
+#input::placeholder {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+#submit {
+  min-width: 84px;
+  min-height: 56px;
+}
+
+.feedback {
+  min-height: 1.5em;
+  margin: 10px 0 0;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.feedback:empty::before {
+  content: 'Enter로 입력';
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+#chips {
+  margin-top: 24px;
+}
+
+.chips li {
+  padding: 5px 11px;
+  border: var(--line) solid var(--fg);
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.chips.missed li {
+  border-style: dashed;
+  border-color: var(--muted);
+  color: var(--muted);
+}
+
+/* ---------- 결과 ---------- */
+.result-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 0 0;
+  padding-bottom: 16px;
+  border-bottom: var(--line) solid var(--fg);
+  line-height: 1;
+}
+
+.r-pair {
+  font-size: 76px;
+  font-weight: 900;
+  letter-spacing: -0.05em;
+}
+
+.score {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.score .mono {
+  font-size: 44px;
+}
+
+.score .mono {
+  margin-right: 2px;
+  font-weight: 600;
+}
+
+.result-head .meta {
+  justify-content: center;
+  margin-top: 12px;
+}
+
+/* 붙어 있는 세그먼트 버튼 */
+.actions {
+  display: flex;
+  margin-top: 32px;
+}
+
+.seg {
+  flex: 1;
+  min-height: 52px;
+  padding: 0 10px;
+  border: var(--line) solid var(--fg);
+  background: var(--bg);
+  color: var(--fg);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.seg + .seg {
+  border-left: 0;
+}
+
+.seg.primary {
+  background: var(--fg);
+  color: var(--bg);
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 40px;
+  padding-top: 16px;
+  border-top: var(--line) solid var(--fg);
+}
+
+.section-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  margin: 0;
+  padding: 8px 16px;
+  background: var(--fg);
+  color: var(--bg);
+  font-size: 15px;
+  font-weight: 700;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 150ms;
+  pointer-events: none;
+}
+
+.toast.show {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* ---------- 정렬: 모바일은 가운데 한 줄 ---------- */
+.screen {
+  text-align: center;
+}
+
+.top {
+  justify-content: center;
+}
+
+.chips,
+.meta {
+  justify-content: center;
+}
+
+.section-title,
+.feedback {
+  text-align: center;
+}
+
+/* 큰 자모: 음수 자간이 끝에도 붙어 오른쪽으로 쏠리는 만큼 되돌린다 */
+.logo,
+.pair,
+.r-pair {
+  padding-right: 0.05em;
+}
+
+.credit a {
+  display: inline-block; /* 라이선스 이름이 중간에서 꺾이지 않게 */
+}
+
+.credit {
+  margin: 72px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+/* ---------- 데스크톱: 두 단으로 가로로 펼친다 ---------- */
+@media (min-width: 900px) {
+  .page {
+    width: min(100%, 960px);
+    padding: 36px 40px 48px;
+  }
+
+  .page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+  }
+
+  .top {
+    margin-bottom: 0;
+  }
+
+  .split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    column-gap: 64px;
+    min-height: calc(100dvh - 200px);
+    text-align: left;
+  }
+
+  .split > .wide {
+    grid-column: 1 / -1;
+    align-self: end;
+  }
+
+  /* 왼쪽 단: 큰 글자를 가운데에 */
+  .hero,
+  #game .stage {
+    text-align: center;
+  }
+
+  .logo {
+    font-size: min(16vw, 200px);
+    white-space: nowrap;
+  }
+
+  .rules li {
+    justify-content: flex-start;
+  }
+
+  .rules b {
+    min-width: 52px;
+  }
+
+  /* 게임: 초성 위, 입력칸 아래로 가운데 한 줄 */
+  #game {
+    width: min(100%, 560px);
+    margin: 0 auto;
+  }
+
+  #game .timer {
+    margin-top: 24px;
+  }
+
+  .pair {
+    font-size: 200px;
+  }
+
+  #result .chips,
+  #result .meta,
+  #result .section-title {
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .result-title {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+
+  .r-pair {
+    font-size: 96px;
+  }
+
+  .result-head .meta {
+    justify-content: flex-start;
+  }
+
+  #result .group:first-child {
+    margin-top: 0;
+  }
+
+  .credit {
+    margin-top: auto;
+    padding-top: 24px;
+  }
 }
