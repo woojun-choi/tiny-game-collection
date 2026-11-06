@@ -3,11 +3,156 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="한글 키캡을 드래그로 묶어 단어를 만드는 2분 퍼즐" />
     <title>천지인</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
+    />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/galmuri@2.40.3/dist/galmuri.css" />
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
-    <div id="app"></div>
+    <div class="page">
+      <header class="top">
+        <p class="crumb">
+          <a href="https://uzun-choi.com">uzun-choi.com</a> / <strong>천지인</strong>
+        </p>
+        <button id="sound" class="sound" type="button" aria-pressed="false">소리 끔</button>
+      </header>
+
+      <!-- 타이틀 -->
+      <section id="title" class="screen title">
+        <hgroup class="mast">
+          <h1>천지인</h1>
+        </hgroup>
+
+        <!-- 하늘(·) 땅(ㅡ) 사람(ㅣ): 크게 확대해 패널 밖으로 잘린 픽셀 그림 -->
+        <ul class="strips" aria-hidden="true">
+          <li class="strip">
+            <svg viewBox="0 0 16 16" shape-rendering="crispEdges">
+              <path d="M6 3h4v1h2v2h1v4h-1v2h-2v1H6v-1H4v-2H3V6h1V4h2z" fill="currentColor" />
+              <path d="M5 6h1v2H5zM6 5h2v1H6z" class="hi" />
+              <path d="M13 1h1v1h1v1h-1v1h-1V3h-1V2h1z" fill="currentColor" />
+            </svg>
+          </li>
+          <li class="strip">
+            <svg viewBox="0 0 16 16" shape-rendering="crispEdges">
+              <defs>
+                <pattern id="dither" width="2" height="2" patternUnits="userSpaceOnUse">
+                  <rect width="1" height="1" fill="currentColor" />
+                </pattern>
+              </defs>
+              <path d="M0 6h16v3H0z" fill="currentColor" />
+              <rect x="0" y="10" width="16" height="6" fill="url(#dither)" />
+            </svg>
+          </li>
+          <li class="strip">
+            <svg viewBox="0 0 16 16" shape-rendering="crispEdges">
+              <path d="M7 0h2v1h1v2H9v1H7V3H6V1h1zM6 5h4v11H6z" fill="currentColor" />
+            </svg>
+          </li>
+        </ul>
+
+        <p class="lead">드래그로 키를 묶어 단어를 만드세요</p>
+
+        <div class="demo" aria-hidden="true">
+          <span class="demo-word">사과 <small>+2</small></span>
+          <div class="demo-keys">
+            <span class="cap mid"><b>사</b></span>
+            <span class="cap mid"><b>과</b></span>
+            <span class="demo-sel"></span>
+          </div>
+        </div>
+
+        <ul class="rules">
+          <li><b>2</b>점 두 글자</li>
+          <li><b>6</b>점 세 글자</li>
+          <li><b>12</b>점 네 글자</li>
+        </ul>
+        <p class="rule-note">3초 안에 이어서 맞히면 콤보 · 제한 시간 2분</p>
+
+        <button id="start" class="btn primary" type="button">시작</button>
+        <p id="title-best" class="meta" hidden></p>
+        <p id="title-status" class="meta" role="status"></p>
+      </section>
+
+      <!-- 게임 -->
+      <section id="game" class="screen game" hidden>
+        <div class="hud">
+          <div class="stat">
+            <span class="label">점수</span>
+            <span id="score" class="num">0</span>
+          </div>
+          <div id="combo" class="combo" data-step="0" aria-label="콤보">
+            <span class="stroke">·</span><span class="stroke">ㅡ</span
+            ><span class="stroke">ㅣ</span>
+            <b id="combo-x">×1.0</b>
+          </div>
+          <div class="stat right">
+            <span class="label">남은 시간</span>
+            <span id="time" class="num">2:00</span>
+          </div>
+        </div>
+
+        <div class="readout" aria-live="polite"><span id="readout"></span></div>
+
+        <div class="case">
+          <div id="board" class="board"></div>
+          <div id="sel" class="sel" hidden></div>
+        </div>
+
+        <p id="hint" class="hint">첫 드래그부터 시간이 흘러요</p>
+
+        <div class="game-foot">
+          <details id="found-box" class="found">
+            <summary>찾은 단어 <span id="found-count" class="num">0</span></summary>
+            <ul id="found" class="chips"></ul>
+          </details>
+          <button id="stop" class="btn small" type="button">그만하기</button>
+        </div>
+      </section>
+
+      <!-- 결과 -->
+      <section id="result" class="screen result" hidden>
+        <p class="kicker">결과</p>
+        <p class="score-big"><span id="r-score" class="num">0</span><small>점</small></p>
+        <p class="meta">
+          <span id="r-best"></span>
+          <span id="r-record" class="tag" hidden>신기록!</span>
+        </p>
+        <dl class="facts">
+          <div>
+            <dt>찾은 단어</dt>
+            <dd id="r-count">0</dd>
+          </div>
+          <div>
+            <dt>최장 단어</dt>
+            <dd id="r-longest">—</dd>
+          </div>
+        </dl>
+
+        <div class="actions">
+          <button id="again" class="btn primary" type="button">다시하기</button>
+          <button id="share" class="btn" type="button">공유</button>
+          <a class="btn" href="https://uzun-choi.com">포트폴리오로</a>
+        </div>
+
+        <div id="r-groups"></div>
+        <div id="r-missed-box" class="group">
+          <h2>남은 단어 예시</h2>
+          <ul id="r-missed" class="chips missed"></ul>
+        </div>
+      </section>
+
+      <footer class="credit">
+        사전: 국립국어원 표준국어대사전·한국어기초사전·우리말샘 ·
+        <a href="https://creativecommons.org/licenses/by-sa/2.0/kr/">CC BY-SA 2.0 KR</a>
+      </footer>
+
+      <p id="toast" class="toast" role="status"></p>
+    </div>
+
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

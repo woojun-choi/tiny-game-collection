@@ -1,5 +1,849 @@
+/*
+ * 1비트 픽셀 키보드. 색은 먹(ink)과 종이(paper) 두 가지, 회색은 패널 바탕 하나.
+ * 그림자는 흐림 없이 딱 떨어지게, 움직임은 계단식(steps)으로.
+ * 한글 픽셀 글꼴은 갈무리(SIL OFL). 긴 본문만 Pretendard.
+ */
+:root {
+  --ink: #000;
+  --paper: #fff;
+  --panel: #e6e6e6;
+  --muted: #6b6b6b;
+  --px: 2px;
+  --pixel: Galmuri11, 'Pretendard Variable', monospace;
+  color-scheme: light;
+}
+
+/* 다크 모드는 그대로 반전 */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #fff;
+    --paper: #000;
+    --panel: #1d1d1d;
+    --muted: #9a9a9a;
+    color-scheme: dark;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
 html,
 body {
   margin: 0;
-  height: 100%;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Pretendard Variable', Pretendard, system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-tap-highlight-color: transparent;
+}
+
+a {
+  color: inherit;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+
+.num {
+  font-family: var(--pixel);
+  font-variant-numeric: tabular-nums;
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 560px);
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: 20px 16px 24px;
+}
+
+.page.wide {
+  width: min(100%, 1040px);
+}
+
+/* ---------- 상단 ---------- */
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.crumb {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.crumb strong {
+  color: var(--ink);
+}
+
+/* 알약 라벨: 소리 버튼과 단어 칩이 같은 모양 */
+.sound,
+.chips li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--pixel);
+  font-size: 11px;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.sound {
+  cursor: pointer;
+}
+
+.sound[aria-pressed='true'] {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* ---------- 키캡: 흰 면, 2px 먹선, 아래로 떨어지는 딱딱한 그림자 ---------- */
+.cap {
+  --k: 48px;
+  --wall-h: max(3px, calc(var(--k) * 0.08));
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: var(--k);
+  height: calc(var(--k) - var(--wall-h));
+  border: var(--px) solid var(--ink);
+  background: var(--paper);
+  box-shadow: 0 var(--wall-h) 0 var(--ink);
+  color: var(--ink);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.cap b {
+  font-family: var(--pixel);
+  font-size: calc(var(--k) * 0.42);
+  font-weight: 400;
+  line-height: 1;
+}
+
+/* 눌린 키: 그림자만큼 내려가고 먹과 종이가 뒤집힌다 */
+.cap.pressed {
+  transform: translateY(var(--wall-h));
+  box-shadow: none;
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* 장식 키: 라이트 모드에서만 검은 키로 반전. 다크 모드는 모든 키가 검은 키 */
+@media (prefers-color-scheme: light) {
+  .cap.inv {
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  .cap.inv.pressed {
+    background: var(--paper);
+    color: var(--ink);
+  }
+}
+
+.cap.gone {
+  visibility: hidden;
+}
+
+/* ---------- 버튼: 넓은 키 ---------- */
+.btn {
+  --wall-h: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50px;
+  padding: 0 22px;
+  border: var(--px) solid var(--ink);
+  border-radius: 0;
+  background: var(--paper);
+  box-shadow: 0 var(--wall-h) 0 var(--ink);
+  color: var(--ink);
+  font-family: var(--pixel);
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.btn:active {
+  transform: translateY(var(--wall-h));
+  box-shadow: none;
+}
+
+.btn.primary {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.btn.small {
+  --wall-h: 3px;
+  min-height: 38px;
+  padding: 0 14px;
+  font-size: 13px;
+}
+
+.btn:focus-visible,
+.sound:focus-visible,
+a:focus-visible,
+summary:focus-visible {
+  outline: var(--px) dashed var(--ink);
+  outline-offset: 4px;
+}
+
+.btn:disabled {
+  cursor: progress;
+}
+
+.meta {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* ---------- 타이틀 ---------- */
+.screen {
+  flex: 1;
+}
+
+.title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 0;
+  text-align: center;
+}
+
+.mast {
+  margin: 0;
+}
+
+.mast h1 {
+  margin: 0;
+  font-family: var(--pixel);
+  font-size: 44px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+/* 세로로 긴 회색 패널 세 개. 그림은 패널보다 크게 그려 가장자리에서 잘린다 */
+.strips {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  width: 100%;
+  margin: 24px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.strip {
+  position: relative;
+  aspect-ratio: 1 / 1.75;
+  overflow: hidden;
+  background: var(--panel);
+  color: var(--ink);
+}
+
+.strip svg {
+  position: absolute;
+  width: 150%;
+  height: auto;
+  color: var(--ink);
+  animation: nudge 2.4s steps(1) infinite;
+}
+
+.strip:nth-child(1) svg {
+  top: 6%;
+  left: -18%;
+  transform: rotate(-8deg);
+}
+
+.strip:nth-child(2) svg {
+  top: 10%;
+  left: -20%;
+  transform: rotate(14deg);
+  animation-delay: 0.8s;
+}
+
+.strip:nth-child(3) svg {
+  top: 2%;
+  left: -26%;
+  transform: rotate(-4deg);
+  animation-delay: 1.6s;
+}
+
+.strip .hi {
+  fill: var(--panel);
+}
+
+/* 한 칸씩 툭 내려앉는 비트맵 움직임 */
+@keyframes nudge {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  10% {
+    translate: 0 4px;
+  }
+  20% {
+    translate: 0 0;
+  }
+}
+
+.lead {
+  margin: 28px 0 0;
+  font-family: var(--pixel);
+  font-size: 17px;
+  font-weight: 700;
+}
+
+/* 사 + 과가 묶여 튀어나가는 작은 시연 (3.2초 반복) */
+.demo {
+  position: relative;
+  margin-top: 20px;
+  padding-top: 30px;
+}
+
+.demo-keys {
+  position: relative;
+  display: flex;
+  gap: 8px;
+  padding: 10px 10px 14px;
+  border: var(--px) solid var(--ink);
+  background: var(--panel);
+}
+
+.cap.mid {
+  --k: 48px;
+  animation: demo-key 3.2s steps(1) infinite;
+}
+
+.demo-sel {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  height: calc(100% - 8px);
+  border: var(--px) dashed var(--ink);
+  animation: demo-sel 3.2s steps(1) infinite;
+}
+
+.demo-word {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  font-family: var(--pixel);
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+  transform: translateX(-50%);
+  opacity: 0;
+  animation: demo-word 3.2s steps(1) infinite;
+}
+
+.demo-word small {
+  font-size: 11px;
+}
+
+@keyframes demo-sel {
+  0% {
+    width: 0;
+    opacity: 0;
+  }
+  14% {
+    width: 60px;
+    opacity: 1;
+  }
+  26%,
+  42% {
+    width: calc(100% - 10px);
+    opacity: 1;
+  }
+  46%,
+  100% {
+    width: calc(100% - 10px);
+    opacity: 0;
+  }
+}
+
+@keyframes demo-key {
+  0% {
+    transform: none;
+    box-shadow: 0 var(--wall-h) 0 var(--ink);
+    opacity: 1;
+  }
+  18% {
+    transform: translateY(var(--wall-h));
+    box-shadow: none;
+  }
+  46% {
+    transform: translate(6px, -24px) rotate(15deg);
+    opacity: 1;
+  }
+  52% {
+    transform: translate(12px, -44px) rotate(30deg);
+    opacity: 0.5;
+  }
+  58%,
+  88% {
+    opacity: 0;
+  }
+  92% {
+    transform: none;
+    box-shadow: 0 var(--wall-h) 0 var(--ink);
+    opacity: 1;
+  }
+}
+
+@keyframes demo-word {
+  0% {
+    opacity: 0;
+  }
+  46%,
+  76% {
+    opacity: 1;
+  }
+  84%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.rules {
+  display: flex;
+  gap: 16px;
+  margin: 28px 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.rules b {
+  margin-right: 3px;
+  color: var(--ink);
+  font-family: var(--pixel);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.rule-note {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+#start {
+  width: min(100%, 280px);
+  margin-top: 28px;
+  font-size: 17px;
+}
+
+#title-best {
+  margin-top: 16px;
+}
+
+#title-status {
+  min-height: 1.5em;
+  margin-top: 4px;
+}
+
+/* ---------- 게임 ---------- */
+.game {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 16px;
+}
+
+.hud {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: end;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.stat.right {
+  align-items: flex-end;
+}
+
+.label {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.stat .num {
+  font-size: 33px;
+  font-weight: 700;
+}
+
+/* 마지막 10초: 시간이 반전 */
+.danger #time {
+  padding: 0 4px;
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* 콤보: · → ㅡ → ㅣ 순서로 픽셀 획이 채워진다 */
+.combo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-bottom: 4px;
+  color: var(--muted);
+}
+
+.combo .stroke {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid currentColor;
+  font-family: var(--pixel);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.combo b {
+  min-width: 4ch;
+  margin-left: 2px;
+  font-family: var(--pixel);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+.combo[data-step='1'] .stroke:nth-child(-n + 1),
+.combo[data-step='2'] .stroke:nth-child(-n + 2),
+.combo[data-step='3'] .stroke:nth-child(-n + 3) {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.combo:not([data-step='0']) b {
+  color: var(--ink);
+}
+
+.readout {
+  display: grid;
+  place-items: center;
+  height: 44px;
+}
+
+#readout {
+  font-family: var(--pixel);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+#readout.live {
+  color: var(--muted);
+}
+
+#readout small {
+  margin-left: 8px;
+  padding: 0 4px;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 15px;
+  letter-spacing: 0;
+}
+
+/* 판: --cols, --rows는 JS가 정한다. 키 크기는 판 폭에서 계산 */
+.case {
+  --chrome: 300px;
+  position: relative;
+  width: min(100%, calc((100dvh - var(--chrome)) * var(--cols) / var(--rows) * 1.02));
+  margin: 0 auto;
+  container-type: inline-size;
+}
+
+/* 보강판: 회색 패널에 먹선, 오른쪽 아래로 떨어지는 창 그림자 */
+.board {
+  --pitch: calc(100cqi / var(--cols));
+  --pad: calc(var(--pitch) * 0.22);
+  --gap: calc(var(--pitch) * 0.1);
+  display: grid;
+  grid-template-columns: repeat(var(--cols), 1fr);
+  gap: var(--gap);
+  padding: var(--pad) var(--pad) calc(var(--pad) + var(--pitch) * 0.06);
+  border: var(--px) solid var(--ink);
+  background: var(--panel);
+  box-shadow: 4px 4px 0 var(--ink);
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.board .cap {
+  --k: calc(
+    (100cqi - 2 * var(--pad) - 2 * var(--px) - (var(--cols) - 1) * var(--gap)) / var(--cols)
+  );
+  width: auto;
+}
+
+/* 콤보가 오르면 판 그림자가 한 번 두꺼워진다 */
+.board.flash {
+  box-shadow: 8px 8px 0 var(--ink);
+}
+
+/* 선택 상자: 움직이는 점선 */
+.sel {
+  position: absolute;
+  background:
+    linear-gradient(90deg, var(--ink) 50%, transparent 0) repeat-x,
+    linear-gradient(90deg, var(--ink) 50%, transparent 0) repeat-x,
+    linear-gradient(0deg, var(--ink) 50%, transparent 0) repeat-y,
+    linear-gradient(0deg, var(--ink) 50%, transparent 0) repeat-y;
+  background-size:
+    8px 2px,
+    8px 2px,
+    2px 8px,
+    2px 8px;
+  background-position:
+    0 0,
+    0 100%,
+    0 0,
+    100% 0;
+  pointer-events: none;
+  animation: ants 0.6s steps(4) infinite;
+}
+
+@keyframes ants {
+  to {
+    background-position:
+      8px 0,
+      -8px 100%,
+      0 -8px,
+      100% 8px;
+  }
+}
+
+.hint {
+  min-height: 1.5em;
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  text-align: center;
+}
+
+.game-foot {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.found {
+  flex: 1;
+  min-width: 0;
+}
+
+.found summary {
+  padding: 8px 0;
+  font-family: var(--pixel);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chips li {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.chips.missed li {
+  border-style: dashed;
+  color: var(--muted);
+}
+
+/* ---------- 결과 ---------- */
+.result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 36px 0 16px;
+  text-align: center;
+}
+
+.kicker {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 15px;
+  font-style: italic;
+}
+
+.score-big {
+  margin: 6px 0 8px;
+  font-family: var(--pixel);
+  font-size: 88px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.score-big small {
+  margin-left: 6px;
+  font-size: 22px;
+}
+
+.tag {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--pixel);
+  font-size: 11px;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: min(100%, 360px);
+  margin: 24px 0 0;
+  border: var(--px) solid var(--ink);
+}
+
+.facts div {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 0;
+}
+
+.facts div + div {
+  border-left: var(--px) solid var(--ink);
+}
+
+.facts dt {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.facts dd {
+  margin: 0;
+  font-family: var(--pixel);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin-top: 32px;
+}
+
+.group h2 {
+  margin: 0;
+  font-family: var(--pixel);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.group .chips {
+  justify-content: center;
+}
+
+.credit {
+  margin-top: 32px;
+  color: var(--muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+.credit a {
+  display: inline-block;
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  margin: 0;
+  padding: 6px 14px;
+  border: var(--px) solid var(--ink);
+  background: var(--paper);
+  box-shadow: 4px 4px 0 var(--ink);
+  color: var(--ink);
+  font-family: var(--pixel);
+  font-size: 13px;
+  transform: translateX(-50%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.toast.show {
+  opacity: 1;
+}
+
+@media (min-width: 900px) {
+  .page {
+    padding: 28px 32px 28px;
+  }
+
+  .case {
+    --chrome: 290px;
+  }
+
+  .strips {
+    width: 520px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .demo-sel {
+    width: calc(100% - 10px);
+  }
 }
