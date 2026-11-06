@@ -37,7 +37,7 @@ The game shows a two-letter chosung (initial consonant) pair, such as **ㄱㅅ**
 2. **Type.** The player types a word and presses Enter (or the on-screen "입력" button).
 3. **Validate.** The word is checked against the rules in §2.2.
    - Valid: the word is added to the found list, and **+3 s** goes back on the timer (capped at 15 s).
-   - Invalid: the input shakes and shows the reason, and **−1 s** comes off the timer (anti-spam).
+   - Invalid: the input shakes and shows the reason. Only a word that isn't in the dictionary costs **−1 s** (anti-spam, see §2.2).
 4. **Repeat** until the timer reaches 0. Then the result screen appears.
 
 The chosung pair stays the same for the whole game.
