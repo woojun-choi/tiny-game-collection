@@ -1,4 +1,4 @@
-import { shareResult } from '@tgh/ui';
+import { mountAds, shareResult } from '@tgh/ui';
 import { generateBoard, type Board } from './board';
 import { loadDict, type Dict } from './dict';
 import {
@@ -13,6 +13,8 @@ import {
 } from './game';
 import { chime, clack, setSound, soundOn, thock } from './sound';
 import { getBest, recordScore } from './storage';
+
+mountAds();
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 

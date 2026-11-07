@@ -61,7 +61,7 @@ a {
   display: flex;
   flex-direction: column;
   width: min(100%, 560px);
-  min-height: 100dvh;
+  min-height: calc(100dvh - var(--ad-h, 0px));
   margin: 0 auto;
   padding: 20px 16px 24px;
 }
@@ -579,7 +579,10 @@ summary:focus-visible {
 .case {
   --chrome: 300px;
   position: relative;
-  width: min(100%, calc((100dvh - var(--chrome)) * var(--cols) / var(--rows) * 1.02));
+  width: min(
+    100%,
+    calc((100dvh - var(--ad-h, 0px) - var(--chrome)) * var(--cols) / var(--rows) * 1.02)
+  );
   margin: 0 auto;
   container-type: inline-size;
 }
@@ -846,4 +849,9 @@ summary:focus-visible {
   .demo-sel {
     width: calc(100% - 10px);
   }
+}
+
+/* 하단 광고가 있으면 아래 여백을 줄여 한 화면에 맞춘다 */
+.tgh-ads-bottom .page {
+  padding-bottom: 8px;
 }

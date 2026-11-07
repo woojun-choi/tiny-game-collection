@@ -537,7 +537,7 @@ a:focus-visible {
   .page {
     display: flex;
     flex-direction: column;
-    min-height: 100dvh;
+    min-height: calc(100dvh - var(--ad-h, 0px));
   }
 
   .top {
@@ -549,7 +549,7 @@ a:focus-visible {
     grid-template-columns: 1fr 1fr;
     align-items: center;
     column-gap: 64px;
-    min-height: calc(100dvh - 200px);
+    min-height: calc(100dvh - var(--ad-h, 0px) - 200px);
     text-align: left;
   }
 
@@ -620,4 +620,9 @@ a:focus-visible {
     margin-top: auto;
     padding-top: 24px;
   }
+}
+
+/* 하단 광고가 있으면 아래 여백을 줄여 한 화면에 맞춘다 */
+.tgh-ads-bottom .page {
+  padding-bottom: 24px;
 }

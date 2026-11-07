@@ -18,3 +18,6 @@ export async function shareResult(text: string): Promise<ShareOutcome> {
   await navigator.clipboard.writeText(text);
   return 'copied';
 }
+
+export { mountAds, pickUnit, layoutFor, RAIL_MIN_WIDTH } from './ads';
+export type { AdSlot, AdUnit } from './ads';
