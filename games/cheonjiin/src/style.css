@@ -452,14 +452,20 @@ summary:focus-visible {
   font-size: 12px;
 }
 
-#start {
-  width: min(100%, 280px);
+.title-actions {
   margin-top: 28px;
+}
+
+#start {
   font-size: 17px;
 }
 
 #title-best {
   margin-top: 16px;
+}
+
+#daily-status {
+  margin-top: 2px;
 }
 
 #title-status {
@@ -705,9 +711,9 @@ summary:focus-visible {
 
 .kicker {
   margin: 0;
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: 15px;
-  font-style: italic;
+  font-family: var(--pixel);
+  font-size: 14px;
+  font-weight: 700;
 }
 
 .score-big {
@@ -854,4 +860,151 @@ summary:focus-visible {
 /* 하단 광고가 있으면 아래 여백을 줄여 한 화면에 맞춘다 */
 .tgh-ads-bottom .page {
   padding-bottom: 8px;
+}
+
+/* iOS 앱(Capacitor): 노치·홈 인디케이터 여백, 웹 전용 링크 숨김, 길게 눌러 선택 끄기 */
+.app body {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.app .page {
+  padding-top: max(20px, env(safe-area-inset-top));
+  padding-bottom: max(8px, env(safe-area-inset-bottom));
+}
+
+.app .crumb,
+.app .web-only {
+  visibility: hidden;
+}
+
+.app .web-only {
+  display: none;
+}
+
+/* ---------- 머리 버튼, 타이틀 버튼 두 개 ---------- */
+.top-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.title-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: min(100%, 280px);
+}
+
+.title-actions .btn {
+  gap: 8px;
+}
+
+/* 앱에서만 보이는 항목(진동, 앱 라이선스) */
+:root:not(.app) .app-only {
+  display: none;
+}
+
+/* ---------- 일시정지: 판을 가린다 ---------- */
+.paused {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: var(--panel);
+  border: var(--px) solid var(--ink);
+}
+
+.paused p {
+  margin: 0;
+  font-family: var(--pixel);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+/* ---------- 설정·정보 시트 ---------- */
+.sheet {
+  width: min(100% - 32px, 420px);
+  max-height: min(100% - 48px, 640px);
+  padding: 20px;
+  border: var(--px) solid var(--ink);
+  border-radius: 0;
+  background: var(--paper);
+  box-shadow: 6px 6px 0 var(--ink);
+  color: var(--ink);
+}
+
+.sheet::backdrop {
+  background: color-mix(in srgb, var(--paper) 70%, transparent);
+}
+
+.sheet h2 {
+  margin: 20px 0 8px;
+  font-family: var(--pixel);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sheet-head h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.toggles,
+.licenses {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.toggles li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--ink);
+  font-family: var(--pixel);
+  font-size: 14px;
+}
+
+.about {
+  margin: 0;
+}
+
+.about div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+  font-size: 13px;
+}
+
+.about dt {
+  color: var(--muted);
+}
+
+.about dd {
+  margin: 0;
+}
+
+.links {
+  margin: 8px 0 0;
+  font-size: 13px;
+}
+
+.licenses li {
+  padding: 4px 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
 }

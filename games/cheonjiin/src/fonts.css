@@ -1,0 +1,18 @@
+/* 글꼴을 CDN 대신 번들에 넣는다(앱은 오프라인). 둘 다 SIL OFL 1.1.
+ * Galmuri © 2019–2025 Lee Minseo, Reserved Font Name "Galmuri".
+ * Pretendard © 2021 Kil Hyung-jin, Reserved Font Name "Pretendard". */
+@import 'pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css';
+
+@font-face {
+  font-family: Galmuri11;
+  font-weight: 400;
+  font-display: swap;
+  src: url('galmuri/dist/Galmuri11.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: Galmuri11;
+  font-weight: 700;
+  font-display: swap;
+  src: url('galmuri/dist/Galmuri11-Bold.woff2') format('woff2');
+}

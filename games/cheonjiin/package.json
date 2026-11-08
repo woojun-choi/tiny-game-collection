@@ -1,5 +1,6 @@
 {
   "name": "cheonjiin",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,6 +10,11 @@
     "typecheck": "tsc -p ."
   },
   "dependencies": {
-    "@tgh/ui": "*"
+    "@capacitor/core": "^8.6.0",
+    "@capacitor/haptics": "^8.0.2",
+    "@capacitor/share": "^8.0.3",
+    "@tgh/ui": "*",
+    "galmuri": "^2.40.3",
+    "pretendard": "^1.3.9"
   }
 }

@@ -2,14 +2,10 @@
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="description" content="한글 키캡을 드래그로 묶어 단어를 만드는 2분 퍼즐" />
     <title>천지인</title>
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
-    />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/galmuri@2.40.3/dist/galmuri.css" />
+    <link rel="stylesheet" href="/src/fonts.css" />
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
@@ -18,7 +14,12 @@
         <p class="crumb">
           <a href="https://uzun-choi.com">uzun-choi.com</a> / <strong>천지인</strong>
         </p>
-        <button id="sound" class="sound" type="button" aria-pressed="false">소리 끔</button>
+        <div class="top-actions">
+          <button id="sound" class="sound" type="button" aria-pressed="false">소리 끔</button>
+          <button id="settings-open" class="sound" type="button" aria-haspopup="dialog">
+            설정
+          </button>
+        </div>
       </header>
 
       <!-- 타이틀 -->
@@ -72,8 +73,14 @@
         </ul>
         <p class="rule-note">3초 안에 이어서 맞히면 콤보 · 제한 시간 2분</p>
 
-        <button id="start" class="btn primary" type="button">시작</button>
+        <div class="title-actions">
+          <button id="start" class="btn primary" type="button">시작</button>
+          <button id="daily" class="btn" type="button">
+            오늘의 퍼즐 <span id="daily-no" class="num"></span>
+          </button>
+        </div>
         <p id="title-best" class="meta" hidden></p>
+        <p id="daily-status" class="meta" hidden></p>
         <p id="title-status" class="meta" role="status"></p>
       </section>
 
@@ -100,6 +107,10 @@
         <div class="case">
           <div id="board" class="board"></div>
           <div id="sel" class="sel" hidden></div>
+          <div id="paused" class="paused" hidden>
+            <p>일시정지</p>
+            <button id="resume" class="btn primary" type="button">계속하기</button>
+          </div>
         </div>
 
         <p id="hint" class="hint">첫 드래그부터 시간이 흘러요</p>
@@ -115,12 +126,13 @@
 
       <!-- 결과 -->
       <section id="result" class="screen result" hidden>
-        <p class="kicker">결과</p>
+        <p id="r-kicker" class="kicker">결과</p>
         <p class="score-big"><span id="r-score" class="num">0</span><small>점</small></p>
         <p class="meta">
           <span id="r-best"></span>
           <span id="r-record" class="tag" hidden>신기록!</span>
         </p>
+        <p id="r-daily" class="meta" hidden></p>
         <dl class="facts">
           <div>
             <dt>찾은 단어</dt>
@@ -135,7 +147,7 @@
         <div class="actions">
           <button id="again" class="btn primary" type="button">다시하기</button>
           <button id="share" class="btn" type="button">공유</button>
-          <a class="btn" href="https://uzun-choi.com">포트폴리오로</a>
+          <a class="btn web-only" href="https://uzun-choi.com">포트폴리오로</a>
         </div>
 
         <div id="r-groups"></div>
@@ -151,6 +163,70 @@
       </footer>
 
       <p id="toast" class="toast" role="status"></p>
+
+      <!-- 설정·정보 -->
+      <dialog id="settings" class="sheet" aria-labelledby="settings-title">
+        <div class="sheet-head">
+          <h2 id="settings-title">설정</h2>
+          <button id="settings-close" class="sound" type="button">닫기</button>
+        </div>
+        <ul class="toggles">
+          <li>
+            <span>소리</span>
+            <button id="opt-sound" class="sound" type="button" aria-pressed="false">끔</button>
+          </li>
+          <li class="app-only">
+            <span>진동</span>
+            <button id="opt-haptics" class="sound" type="button" aria-pressed="true">켬</button>
+          </li>
+        </ul>
+
+        <h2>정보</h2>
+        <dl class="about">
+          <div>
+            <dt>버전</dt>
+            <dd id="app-version"></dd>
+          </div>
+          <div>
+            <dt>만든 사람</dt>
+            <dd>
+              <a href="https://uzun-choi.com" target="_blank" rel="noopener">uzun-choi.com</a>
+            </dd>
+          </div>
+          <div>
+            <dt>문의</dt>
+            <dd>
+              <a
+                href="https://github.com/woojun-choi/tiny-game-collection/issues"
+                target="_blank"
+                rel="noopener"
+                >GitHub 이슈</a
+              >
+            </dd>
+          </div>
+        </dl>
+        <p class="links">
+          <a href="./privacy.html">개인정보 처리방침</a>
+        </p>
+
+        <h2>라이선스</h2>
+        <ul class="licenses">
+          <li>
+            사전: 국립국어원 표준국어대사전·한국어기초사전·우리말샘을 가공.
+            <a
+              href="https://creativecommons.org/licenses/by-sa/2.0/kr/"
+              target="_blank"
+              rel="noopener"
+              >CC BY-SA 2.0 KR</a
+            >
+          </li>
+          <li>
+            글꼴: Galmuri © Lee Minseo, Pretendard © Kil Hyung-jin.
+            <a href="https://openfontlicense.org" target="_blank" rel="noopener">SIL OFL 1.1</a>
+          </li>
+          <li class="app-only">앱: Capacitor © Ionic. MIT License</li>
+        </ul>
+      </dialog>
     </div>
 
     <script type="module" src="/src/main.ts"></script>

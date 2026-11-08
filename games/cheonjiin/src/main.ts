@@ -1,5 +1,6 @@
-import { mountAds, shareResult } from '@tgh/ui';
+import { mountAds } from '@tgh/ui';
 import { generateBoard, type Board } from './board';
+import { dailySeed, dayNumber, liveStreak, todayKey } from './daily';
 import { loadDict, type Dict } from './dict';
 import {
   CLEAR_BONUS,
@@ -11,10 +12,21 @@ import {
   readSelection,
   rectCells,
 } from './game';
+import {
+  hapticClear,
+  hapticPress,
+  hapticWord,
+  hapticsOn,
+  isApp,
+  setHaptics,
+  share,
+} from './native';
 import { chime, clack, setSound, soundOn, thock } from './sound';
-import { getBest, recordScore } from './storage';
+import { getBest, getDaily, getStreak, recordDaily, recordScore } from './storage';
 
-mountAds();
+// 앱에서는 웹 배너 대신 앱 광고(추후)를 쓴다.
+if (isApp) document.documentElement.classList.add('app');
+else mountAds();
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -32,7 +44,14 @@ const reduce = matchMedia('(prefers-reduced-motion: reduce)');
 
 let dict: Promise<Dict> = loadDict();
 
+type Mode = 'normal' | 'daily';
+
 interface State {
+  mode: Mode;
+  /** 오늘의 퍼즐 날짜 */
+  day: string | null;
+  /** 일시정지한 시각. 앱이 백그라운드로 가거나 설정을 열면 멈춘다 */
+  pausedAt: number | null;
   board: Board;
   keys: HTMLElement[];
   score: number;
@@ -60,39 +79,83 @@ function toast(text: string): void {
 // ---------- 소리 ----------
 
 const soundBtn = $('sound');
+const optSound = $('opt-sound');
+const optHaptics = $('opt-haptics');
 function renderSound(): void {
-  soundBtn.setAttribute('aria-pressed', String(soundOn()));
-  soundBtn.textContent = soundOn() ? '소리 켬' : '소리 끔';
+  for (const [btn, on, label] of [
+    [soundBtn, soundOn(), soundOn() ? '소리 켬' : '소리 끔'],
+    [optSound, soundOn(), soundOn() ? '켬' : '끔'],
+    [optHaptics, hapticsOn(), hapticsOn() ? '켬' : '끔'],
+  ] as const) {
+    btn.setAttribute('aria-pressed', String(on));
+    btn.textContent = label;
+  }
 }
-soundBtn.addEventListener('click', () => {
-  setSound(!soundOn());
+for (const btn of [soundBtn, optSound])
+  btn.addEventListener('click', () => {
+    setSound(!soundOn());
+    renderSound();
+  });
+optHaptics.addEventListener('click', () => {
+  setHaptics(!hapticsOn());
   renderSound();
+  hapticPress();
 });
 renderSound();
 
+// ---------- 설정·정보 ----------
+
+const sheet = $<HTMLDialogElement>('settings');
+$('app-version').textContent = __APP_VERSION__;
+$('settings-open').addEventListener('click', () => {
+  pause();
+  sheet.showModal();
+});
+$('settings-close').addEventListener('click', () => sheet.close());
+// 바깥(배경)을 누르면 닫기
+sheet.addEventListener('click', (e) => {
+  if (e.target === sheet) sheet.close();
+});
+
 // ---------- 타이틀 ----------
+
+const dailyBtn = $<HTMLButtonElement>('daily');
 
 function renderTitle(): void {
   const best = getBest();
   const el = $('title-best');
   el.hidden = best === null;
   if (best !== null) el.textContent = `최고 기록 ${best}점`;
+
+  const day = todayKey();
+  $('daily-no').textContent = `#${dayNumber(day)}`;
+  const done = getDaily(day);
+  const streak = liveStreak(getStreak(), day);
+  const status = $('daily-status');
+  const parts = [
+    ...(done ? [`오늘의 퍼즐 ${done.score}점`] : []),
+    ...(streak ? [`연속 ${streak}일`] : []),
+  ];
+  status.hidden = !parts.length;
+  status.textContent = parts.join(' · ');
 }
 
-startBtn.addEventListener('click', async () => {
+async function begin(mode: Mode, btn: HTMLButtonElement): Promise<void> {
   const status = $('title-status');
-  startBtn.disabled = true;
+  btn.disabled = true;
   status.textContent = '사전 불러오는 중…';
   try {
-    startGame(await dict);
+    startGame(await dict, mode);
     status.textContent = '';
   } catch {
     dict = loadDict();
     status.textContent = '사전을 불러오지 못했어요. 다시 시도해 주세요.';
   } finally {
-    startBtn.disabled = false;
+    btn.disabled = false;
   }
-});
+}
+startBtn.addEventListener('click', () => void begin('normal', startBtn));
+dailyBtn.addEventListener('click', () => void begin('daily', dailyBtn));
 
 // ---------- 게임 ----------
 
@@ -101,9 +164,11 @@ function gridSize(): [number, number] {
   return innerWidth >= 700 && innerWidth > innerHeight ? [18, 9] : [9, 13];
 }
 
-function startGame({ common }: Dict): void {
-  const [cols, rows] = gridSize();
-  const seed = (Math.random() * 2 ** 32) >>> 0;
+function startGame({ common }: Dict, mode: Mode): void {
+  // 오늘의 퍼즐은 모두 같은 판이어야 하니 화면과 상관없이 9×13
+  const day = mode === 'daily' ? todayKey() : null;
+  const [cols, rows] = day ? [9, 13] : gridSize();
+  const seed = day ? dailySeed(day) : (Math.random() * 2 ** 32) >>> 0;
   const board = generateBoard(seed, cols, rows, common);
   const accents = new Set(board.accents);
 
@@ -120,6 +185,9 @@ function startGame({ common }: Dict): void {
   });
 
   s = {
+    mode,
+    day,
+    pausedAt: null,
     board,
     keys,
     score: 0,
@@ -135,7 +203,10 @@ function startGame({ common }: Dict): void {
   screens.game.classList.remove('danger');
   setCombo(0);
   setReadout('');
-  $('hint').textContent = '첫 드래그부터 시간이 흘러요';
+  $('paused').hidden = true;
+  $('hint').textContent = day
+    ? `오늘의 퍼즐 #${dayNumber(day)} · 첫 판만 기록돼요`
+    : '첫 드래그부터 시간이 흘러요';
   $('found').replaceChildren();
   $('found-count').textContent = '0';
   show('game');
@@ -148,7 +219,7 @@ function formatTime(ms: number): string {
 
 let lastWholeSec = -1;
 function tick(): void {
-  if (!s || s.ended || s.startedAt === null) return;
+  if (!s || s.ended || s.startedAt === null || s.pausedAt !== null) return;
   const left = GAME_MS - (performance.now() - s.startedAt);
   if (left <= 0) return endGame();
   timeEl.textContent = formatTime(left);
@@ -200,6 +271,31 @@ function setReadout(text: string, live = false, extra = ''): void {
   }
 }
 
+// ---------- 일시정지 ----------
+
+/** 진행 중인 판을 멈춘다. 판을 가려서 멈춘 동안 단어를 찾지 못하게 한다. */
+function pause(): void {
+  if (!s || s.ended || s.startedAt === null || s.pausedAt !== null) return;
+  s.pausedAt = performance.now();
+  cancelDrag();
+  $('paused').hidden = false;
+}
+
+function resume(): void {
+  if (!s || s.pausedAt === null) return;
+  const gap = performance.now() - s.pausedAt;
+  s.startedAt! += gap;
+  if (s.lastClearAt !== null) s.lastClearAt += gap;
+  s.pausedAt = null;
+  $('paused').hidden = true;
+  requestAnimationFrame(tick);
+}
+
+$('resume').addEventListener('click', resume);
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) pause();
+});
+
 // ---------- 드래그 ----------
 
 let anchor: number | null = null;
@@ -247,8 +343,17 @@ function updateSelection(): void {
   selEl.hidden = false;
 }
 
+function cancelDrag(): void {
+  if (!s) return;
+  anchor = hover = null;
+  selEl.hidden = true;
+  for (const i of pressed) s.keys[i]!.classList.remove('pressed');
+  pressed = new Set();
+  setReadout('');
+}
+
 boardEl.addEventListener('pointerdown', (e) => {
-  if (!s || s.ended || e.button > 0) return;
+  if (!s || s.ended || s.pausedAt !== null || e.button > 0) return;
   e.preventDefault();
   boardEl.setPointerCapture(e.pointerId);
   if (s.startedAt === null) {
@@ -259,6 +364,7 @@ boardEl.addEventListener('pointerdown', (e) => {
   anchor = hover = cellAt(e);
   updateSelection();
   thock();
+  hapticPress();
 });
 
 boardEl.addEventListener('pointermove', (e) => {
@@ -306,6 +412,7 @@ function success(keys: number[], word: string): void {
       easing: 'steps(3)',
     });
   chime(word.length);
+  hapticWord(word.length);
   if (s.combo > 0) {
     boardEl.classList.add('flash');
     setTimeout(() => boardEl.classList.remove('flash'), 220);
@@ -320,6 +427,7 @@ function success(keys: number[], word: string): void {
 
   if (s.board.cells.every((c) => c === null)) {
     s.score += CLEAR_BONUS;
+    hapticClear();
     toast(`판 전부 비움! +${CLEAR_BONUS}`);
     rollScore();
     setTimeout(endGame, 900);
@@ -388,10 +496,30 @@ function endGame(): void {
 
 function renderResult(): void {
   if (!s) return;
-  const { best, isNew } = recordScore(s.score);
   $('r-score').textContent = String(s.score);
-  $('r-best').textContent = `최고 기록 ${best}점`;
-  $('r-record').hidden = !isNew;
+  const dailyEl = $('r-daily');
+  if (s.day) {
+    const { first, record, streak } = recordDaily({
+      day: s.day,
+      score: s.score,
+      words: s.found.length,
+    });
+    $('r-kicker').textContent = `오늘의 퍼즐 #${dayNumber(s.day)}`;
+    $('r-best').textContent = first
+      ? '오늘 기록으로 남았어요'
+      : `오늘 기록 ${record.score}점 (첫 판만 남아요)`;
+    $('r-record').hidden = true;
+    dailyEl.hidden = false;
+    dailyEl.textContent = `연속 ${streak.count}일 · 최고 ${streak.best}일 · 내일 새 퍼즐`;
+    $('again').textContent = '일반 게임';
+  } else {
+    const { best, isNew } = recordScore(s.score);
+    $('r-kicker').textContent = '결과';
+    $('r-best').textContent = `최고 기록 ${best}점`;
+    $('r-record').hidden = !isNew;
+    dailyEl.hidden = true;
+    $('again').textContent = '다시하기';
+  }
   $('r-count').textContent = `${s.found.length}개`;
   const longest = longestWord(s.found);
   $('r-longest').textContent = longest ?? '—';
@@ -435,7 +563,7 @@ function chipList(words: string[]): HTMLUListElement {
 
 $('again').addEventListener('click', async () => {
   try {
-    startGame(await dict);
+    startGame(await dict, 'normal');
   } catch {
     dict = loadDict();
     toast('사전을 불러오지 못했어요');
@@ -445,13 +573,17 @@ $('again').addEventListener('click', async () => {
 $('share').addEventListener('click', async () => {
   if (!s) return;
   const longest = longestWord(s.found);
+  const streak = s.day ? liveStreak(getStreak(), s.day) : 0;
   const text = [
-    `천지인 ⌨️ ${s.score}점 · ${s.found.length}단어`,
+    s.day
+      ? `천지인 오늘의 퍼즐 #${dayNumber(s.day)} ⌨️ ${s.score}점 · ${s.found.length}단어`
+      : `천지인 ⌨️ ${s.score}점 · ${s.found.length}단어`,
     ...(longest ? [`최장 단어: ${longest}`] : []),
+    ...(streak > 1 ? [`연속 ${streak}일째`] : []),
     'cheonjiin.uzun-choi.com',
   ].join('\n');
   try {
-    if ((await shareResult(text)) === 'copied') toast('복사됐어요');
+    if ((await share(text)) === 'copied') toast('복사됐어요');
   } catch {
     toast('공유하지 못했어요');
   }
