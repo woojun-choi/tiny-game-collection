@@ -71,7 +71,9 @@
           <li><b>6</b>점 세 글자</li>
           <li><b>12</b>점 네 글자</li>
         </ul>
-        <p class="rule-note">3초 안에 이어서 맞히면 콤보 · 제한 시간 2분</p>
+        <p class="rule-note">
+          3초 안에 이어서 맞히면 콤보 · 제한 시간 2분<br />드래그 대신 두 키를 차례로 눌러도 돼요
+        </p>
 
         <div class="title-actions">
           <button id="start" class="btn primary" type="button">시작</button>
@@ -92,20 +94,26 @@
             <span id="score" class="num">0</span>
           </div>
           <div id="combo" class="combo" data-step="0" aria-label="콤보">
-            <span class="stroke">·</span><span class="stroke">ㅡ</span
-            ><span class="stroke">ㅣ</span>
+            <span class="stroke" aria-hidden="true">·</span
+            ><span class="stroke" aria-hidden="true">ㅡ</span
+            ><span class="stroke" aria-hidden="true">ㅣ</span>
             <b id="combo-x">×1.0</b>
           </div>
           <div class="stat right">
             <span class="label">남은 시간</span>
-            <span id="time" class="num">2:00</span>
+            <span id="time" class="num" role="timer">2:00</span>
           </div>
         </div>
 
         <div class="readout" aria-live="polite"><span id="readout"></span></div>
 
         <div class="case">
-          <div id="board" class="board"></div>
+          <div
+            id="board"
+            class="board"
+            role="group"
+            aria-label="글자 판. 드래그하거나 두 키를 차례로 눌러 사각형으로 묶어요"
+          ></div>
           <div id="sel" class="sel" hidden></div>
           <div id="paused" class="paused" hidden>
             <p>일시정지</p>
@@ -206,7 +214,7 @@
           </div>
         </dl>
         <p class="links">
-          <a href="./privacy.html">개인정보 처리방침</a>
+          <a href="./support.html">도움말</a> · <a href="./privacy.html">개인정보 처리방침</a>
         </p>
 
         <h2>라이선스</h2>
@@ -229,6 +237,6 @@
       </dialog>
     </div>
 
-    <script type="module" src="/src/main.ts"></script>
+    <script type="module" src="/src/boot.ts"></script>
   </body>
 </html>

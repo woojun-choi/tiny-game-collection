@@ -16,8 +16,6 @@ export interface Board {
   /** 행 우선. 지워진 칸은 null */
   cells: (string | null)[];
   planted: Placement[];
-  /** 장식용 색 키 */
-  accents: number[];
 }
 
 /** 시드 → 0 이상 1 미만 난수. */
@@ -117,7 +115,9 @@ export function generateBoard(
     const pool = planted.flatMap((p) => [...p.word]);
     for (let i = 0; i < cells.length; i++) cells[i] ??= pick(pool);
 
-    const accents = cells.flatMap((_, i) => (rand() < 0.1 ? [i] : []));
-    return { cols, rows, cells, planted, accents };
+    // 예전엔 여기서 칸마다 난수를 하나씩 뽑아 장식 키를 골랐다. 장식 키는 없앴지만
+    // 같은 시드에서 같은 판(오늘의 퍼즐)이 나오도록 난수 소비는 그대로 둔다.
+    for (let i = 0; i < cells.length; i++) rand();
+    return { cols, rows, cells, planted };
   }
 }

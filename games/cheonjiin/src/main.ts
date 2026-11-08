@@ -170,16 +170,18 @@ function startGame({ common }: Dict, mode: Mode): void {
   const [cols, rows] = day ? [9, 13] : gridSize();
   const seed = day ? dailySeed(day) : (Math.random() * 2 ** 32) >>> 0;
   const board = generateBoard(seed, cols, rows, common);
-  const accents = new Set(board.accents);
 
   caseEl.style.setProperty('--cols', String(cols));
   caseEl.style.setProperty('--rows', String(rows));
   boardEl.replaceChildren();
-  const keys = board.cells.map((ch, i) => {
+  anchor = hover = tapAnchor = null;
+  pressed = new Set();
+  const keys = board.cells.map((ch) => {
     const el = document.createElement('div');
     el.className = 'cap';
-    if (accents.has(i)) el.classList.add('inv');
     el.innerHTML = `<b>${ch}</b>`;
+    el.setAttribute('role', 'img');
+    el.setAttribute('aria-label', ch ?? '빈칸');
     boardEl.append(el);
     return el;
   });
@@ -279,6 +281,7 @@ function pause(): void {
   s.pausedAt = performance.now();
   cancelDrag();
   $('paused').hidden = false;
+  $('resume').focus();
 }
 
 function resume(): void {
@@ -301,6 +304,9 @@ document.addEventListener('visibilitychange', () => {
 let anchor: number | null = null;
 let hover: number | null = null;
 let pressed = new Set<number>();
+/** 탭 두 번으로 묶기: 키를 한 번 톡 누르면 그 키가 한쪽 꼭짓점으로 남는다. 드래그가 어려운 사람을 위한 길. */
+let tapAnchor: number | null = null;
+let chained = false;
 
 /** 포인터 좌표 → 칸 번호. 판 밖이면 가장자리 칸으로 붙인다. */
 function cellAt(e: PointerEvent): number {
@@ -345,7 +351,7 @@ function updateSelection(): void {
 
 function cancelDrag(): void {
   if (!s) return;
-  anchor = hover = null;
+  anchor = hover = tapAnchor = null;
   selEl.hidden = true;
   for (const i of pressed) s.keys[i]!.classList.remove('pressed');
   pressed = new Set();
@@ -361,7 +367,10 @@ boardEl.addEventListener('pointerdown', (e) => {
     $('hint').textContent = '';
     requestAnimationFrame(tick);
   }
-  anchor = hover = cellAt(e);
+  hover = cellAt(e);
+  chained = tapAnchor !== null;
+  anchor = tapAnchor ?? hover;
+  tapAnchor = null;
   updateSelection();
   thock();
   hapticPress();
@@ -377,6 +386,14 @@ boardEl.addEventListener('pointermove', (e) => {
 
 function release(): void {
   if (!s || anchor === null || hover === null) return;
+  // 키 하나만 톡 눌렀으면 눌린 채로 두고 다음 탭을 기다린다
+  if (anchor === hover && !chained && s.board.cells[anchor] != null && !s.ended) {
+    tapAnchor = anchor;
+    anchor = hover = null;
+    selEl.hidden = true;
+    setReadout(s.board.cells[tapAnchor]!, true, '다른 키를 누르면 묶여요');
+    return;
+  }
   const sel = readSelection(s.board.cells, rectCells(anchor, hover, s.board.cols));
   anchor = hover = null;
   selEl.hidden = true;

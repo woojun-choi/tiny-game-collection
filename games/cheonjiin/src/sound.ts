@@ -1,16 +1,12 @@
 /**
  * 기계식 키보드 소리. 음원 파일 없이 Web Audio로 합성한다(용량 0).
- * 기본은 꺼짐. 켜면 localStorage에 기억한다.
+ * 기본은 꺼짐. 켜면 기기 저장소에 기억한다.
  */
+import { load, save } from './persist';
+
 const KEY = 'cheonjiin.sound';
 let ctx: AudioContext | null = null;
-let on = (() => {
-  try {
-    return localStorage.getItem(KEY) === '1';
-  } catch {
-    return false;
-  }
-})();
+let on = load(KEY) === '1';
 
 export function soundOn(): boolean {
   return on;
@@ -18,11 +14,7 @@ export function soundOn(): boolean {
 
 export function setSound(value: boolean): void {
   on = value;
-  try {
-    localStorage.setItem(KEY, value ? '1' : '0');
-  } catch {
-    // 무시
-  }
+  save(KEY, value ? '1' : '0');
   if (on) audio();
 }
 

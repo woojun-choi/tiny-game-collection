@@ -1,24 +1,22 @@
 import { nextStreak, type Streak } from './daily';
+import { load, save } from './persist';
 
 const KEY = 'cheonjiin.best';
 const DAILY = 'cheonjiin.daily';
 const STREAK = 'cheonjiin.streak';
 
 function read<T>(key: string): T | null {
+  const v = load(key);
+  if (v === null) return null;
   try {
-    const v = localStorage.getItem(key);
-    return v === null ? null : (JSON.parse(v) as T);
+    return JSON.parse(v) as T;
   } catch {
     return null;
   }
 }
 
 function write(key: string, value: unknown): void {
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-  } catch {
-    // 시크릿 모드 등 저장 불가 환경은 무시
-  }
+  save(key, JSON.stringify(value));
 }
 
 export function getBest(): number | null {

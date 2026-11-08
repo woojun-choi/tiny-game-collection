@@ -146,19 +146,6 @@ a {
   color: var(--paper);
 }
 
-/* 장식 키: 라이트 모드에서만 검은 키로 반전. 다크 모드는 모든 키가 검은 키 */
-@media (prefers-color-scheme: light) {
-  .cap.inv {
-    background: var(--ink);
-    color: var(--paper);
-  }
-
-  .cap.inv.pressed {
-    background: var(--paper);
-    color: var(--ink);
-  }
-}
-
 .cap.gone {
   visibility: hidden;
 }
@@ -477,6 +464,8 @@ summary:focus-visible {
 .game {
   display: flex;
   flex-direction: column;
+  /* 키가 큰 화면에서 판이 위에 붙고 아래가 비지 않게 세로 가운데 */
+  justify-content: center;
   gap: 8px;
   padding-top: 16px;
 }

@@ -3,24 +3,17 @@ import { Capacitor } from '@capacitor/core';
 import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics';
 import { Share } from '@capacitor/share';
 import { shareResult, type ShareOutcome } from '@tgh/ui';
+import { load, save } from './persist';
 
 export const isApp = Capacitor.isNativePlatform();
 
 const HAPTICS = 'cheonjiin.haptics';
 /** 진동은 기본 켬. 설정에서 끌 수 있다 */
 export function hapticsOn(): boolean {
-  try {
-    return localStorage.getItem(HAPTICS) !== '0';
-  } catch {
-    return true;
-  }
+  return load(HAPTICS) !== '0';
 }
 export function setHaptics(on: boolean): void {
-  try {
-    localStorage.setItem(HAPTICS, on ? '1' : '0');
-  } catch {
-    // 저장 불가 환경은 무시
-  }
+  save(HAPTICS, on ? '1' : '0');
 }
 const buzz = () => isApp && hapticsOn();
 
