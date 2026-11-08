@@ -574,10 +574,7 @@ summary:focus-visible {
 .case {
   --chrome: 300px;
   position: relative;
-  width: min(
-    100%,
-    calc((100dvh - var(--chrome)) * var(--cols) / var(--rows) * 1.02)
-  );
+  width: min(100%, calc((100dvh - var(--chrome)) * var(--cols) / var(--rows) * 1.02));
   margin: 0 auto;
   container-type: inline-size;
 }

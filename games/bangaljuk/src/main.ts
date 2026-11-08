@@ -22,7 +22,6 @@ import {
 import { DIFFICULTY_LABEL, pickRounds, type Placement, type RoundSpec } from './rounds';
 import { getBest, recordAverage } from './storage';
 
-
 const ROUNDS = 5;
 const MASK = 1024; // 측정용 실루엣 해상도
 const MIN_DRAG_PX = 24;

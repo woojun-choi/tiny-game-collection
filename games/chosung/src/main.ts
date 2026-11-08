@@ -4,7 +4,6 @@ import { BONUS_MS, Game, MAX_MS, REASON_TEXT, missedWords, shareText } from './g
 import { SPRING, flashInvert, play, reducedMotion } from './motion';
 import { getBest, recordScore } from './storage';
 
-
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 
 const screens = { title: $('title'), game: $('game'), result: $('result') };
