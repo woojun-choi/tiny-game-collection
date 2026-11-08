@@ -10,26 +10,16 @@
 import { readFileSync, readdirSync, rmSync, statSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { cleanWord, extractBasic, extractHeadwords } from './extract.ts';
+import { wordList } from './lists.ts';
 
 const ROOT = new URL('../', import.meta.url).pathname;
 const RAW = join(ROOT, 'raw');
 const OUT = join(ROOT, '../../games/cheonjiin/public/dict');
 
-/** 한 줄에 하나, '#'는 주석. '*'로 시작하면 그 글자가 들어간 단어를 모두 고른다. */
-function matcher(name: string): (w: string) => boolean {
-  const lines = readFileSync(join(ROOT, name), 'utf8')
-    .split('\n')
-    .map((l) => l.trim())
-    .filter((l) => l && !l.startsWith('#'));
-  const exact = new Set(lines.filter((l) => !l.startsWith('*')));
-  const part = lines.filter((l) => l.startsWith('*')).map((l) => l.slice(1));
-  return (w) => exact.has(w) || part.some((p) => w.includes(p));
-}
-
 /** blocked.txt: 욕설·비하·성적 표현. 정답에서도 판에서도 뺀다. */
-const isBlocked = matcher('blocked.txt');
+const isBlocked = wordList('blocked.txt');
 /** no-seed.txt: 정답으로는 인정하되 판에 심지는 않는 말(술·담배·약물·폭력·속옷 등, 연령 등급). */
-const isNoSeed = matcher('no-seed.txt');
+const isNoSeed = wordList('no-seed.txt');
 
 const isWord = (w: string) => /^[가-힣]{2,4}$/.test(w) && !isBlocked(w);
 

@@ -5,12 +5,21 @@
  * - 한국어기초사전 LMF XML(<LexicalEntry>)은 '흔한 단어'로 순위를 매긴다.
  * - 그 밖의 JSON/XML(우리말샘·표준국어대사전)은 정답 인정용으로 전부 받는다. 방언·옛말·북한어도 포함.
  * - extra.txt(커밋됨)는 사전에 없는 신조어 등을 직접 보탠다.
+ * - blocked.txt의 말은 정답에서 빼고, no-seed.txt의 말은 정답으로만 두고 '못 찾은 단어' 예시 뒤로 미룬다.
  * 출력: games/chosung/public/dict/index.json, <초성인덱스>-<초성인덱스>.json
  */
 import { readFileSync, readdirSync, rmSync, statSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { CHOSUNG_LIST } from '@tgh/hangul';
-import { RARE, addWord, extractBasic, extractHeadwords, type PairTable } from './extract.ts';
+import {
+  RARE,
+  addWord,
+  cleanWord,
+  extractBasic,
+  extractHeadwords,
+  type PairTable,
+} from './extract.ts';
+import { wordList } from './lists.ts';
 
 const ROOT = new URL('../', import.meta.url).pathname;
 const RAW = join(ROOT, 'raw');
@@ -26,23 +35,31 @@ function files(dir: string): string[] {
   });
 }
 
+const isBlocked = wordList('blocked.txt');
+const isNoSeed = wordList('no-seed.txt');
+
 mkdirSync(RAW, { recursive: true });
 const table: PairTable = { pairs: new Map() };
+function add(raw: string, rank: number): void {
+  const w = cleanWord(raw);
+  if (isBlocked(w)) return;
+  addWord(table, raw, isNoSeed(w) ? RARE : rank);
+}
 let hasBasic = false;
 
 for (const file of files(RAW)) {
   const text = readFileSync(file, 'utf8');
   if (text.includes('<LexicalEntry')) {
     hasBasic = true;
-    for (const [w, rank] of extractBasic(text)) addWord(table, w, rank);
+    for (const [w, rank] of extractBasic(text)) add(w, rank);
   } else {
-    for (const w of extractHeadwords(text)) addWord(table, w, RARE);
+    for (const w of extractHeadwords(text)) add(w, RARE);
   }
   console.log('읽음', file.slice(RAW.length + 1));
 }
 for (const line of readFileSync(join(ROOT, 'extra.txt'), 'utf8').split('\n')) {
   const w = line.trim();
-  if (w && !w.startsWith('#')) addWord(table, w, RARE - 1);
+  if (w && !w.startsWith('#')) add(w, RARE - 1);
 }
 
 if (!table.pairs.size || !files(RAW).length) {

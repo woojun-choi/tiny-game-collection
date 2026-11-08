@@ -99,7 +99,8 @@ A wrong chosung only gets the message, with no time penalty. This keeps typos fo
 - **Primary:** National Institute of Korean Language (국립국어원) open dictionary data from 표준국어대사전 / 우리말샘 (bulk download). Check the license terms and add the required attribution in the footer before launch.
 - **Include:** every headword that is exactly 2 Hangul syllables, in any part of speech, exactly as it appears in the dictionary. For example, 가다 (verb) and 갓난 (determiner) both count. Inflected forms that aren't headwords, like 갔다, don't count.
 - **Exclude:** entries marked 옛말 (archaic), 방언 (dialect), or 북한어 (North Korean), and anything that isn't pure Hangul (e.g. words with hyphens or Hanja).
-- A small, curated **denylist** filters out slurs and offensive words. They're never accepted as answers and never shown as missed words.
+- A small, curated **denylist** (`packages/dict-pipeline/blocked.txt`, shared with 천지인) filters out slurs and offensive words. They're never accepted as answers and never shown as missed words.
+- A second list (`no-seed.txt`) holds ordinary words that are fine to accept but shouldn't be suggested first, such as alcohol, tobacco, or underwear. They're ranked as rare, so they come last in the missed-word examples.
 
 ### 4.2 Commonness ranking
 - The "missed words" reveal should show words people know, not obscure entries.
