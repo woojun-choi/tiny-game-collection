@@ -3,3 +3,7 @@ package-lock.json
 dist/
 # 사전 스크립트가 생성하는 파일
 games/*/public/dict/
+
+# Capacitor가 만드는 iOS 산출물
+apps/*/ios/App/App/public
+apps/*/ios/App/App/capacitor.config.json

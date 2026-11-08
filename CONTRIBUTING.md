@@ -31,6 +31,7 @@ type(scope): 요약
 | ----------------------------------------------- | ---------------------------------- |
 | `bangaljuk`, `chosung`, `cheonjiin`, `yeolgong` | `games/` 아래 각 게임              |
 | `hangul`, `ui`, `dict`                          | `packages/` 아래 공용 패키지       |
+| `cheonjiin-ios`                                 | `apps/` 아래 앱 셸                 |
 | `prds`                                          | 기획서                             |
 | `repo`                                          | 루트 설정, CI, 여러 곳에 걸친 변경 |
 
