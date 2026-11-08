@@ -1,4 +1,3 @@
-import { mountAds } from '@tgh/ui';
 import { generateBoard, type Board } from './board';
 import { dailySeed, dayNumber, liveStreak, todayKey } from './daily';
 import { loadDict, type Dict } from './dict';
@@ -24,9 +23,8 @@ import {
 import { chime, clack, setSound, soundOn, thock } from './sound';
 import { getBest, getDaily, getStreak, recordDaily, recordScore } from './storage';
 
-// 앱에서는 웹 배너 대신 앱 광고(추후)를 쓴다.
+// 웹은 비영리 공개(광고 없음). 광고는 앱에서만 붙인다.
 if (isApp) document.documentElement.classList.add('app');
-else mountAds();
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 

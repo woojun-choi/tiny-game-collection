@@ -4,7 +4,7 @@
   --paper: #fffdf8;
   --bg: #f7f4ee;
   --line: 2.5px;
-  --stage: min(86vw, calc(58vh - var(--ad-h, 0px)), 520px);
+  --stage: min(86vw, 58vh, 520px);
   --display: 'Black Han Sans', 'Pretendard Variable', sans-serif;
   --mono: 'Space Mono', ui-monospace, monospace;
 }
@@ -29,7 +29,7 @@ body {
 }
 
 .screen {
-  min-height: calc(100dvh - var(--ad-h, 0px));
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   align-items: center;

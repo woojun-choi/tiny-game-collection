@@ -1,5 +1,4 @@
 import { readFileSync } from 'node:fs';
-import { adsenseHead } from '@tgh/ui/vite';
 import { defineConfig } from 'vite';
 
 const { version } = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'));
@@ -8,5 +7,4 @@ const { version } = JSON.parse(readFileSync(new URL('./package.json', import.met
 export default defineConfig({
   base: './',
   define: { __APP_VERSION__: JSON.stringify(version) },
-  plugins: [adsenseHead()],
 });

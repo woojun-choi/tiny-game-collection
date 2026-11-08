@@ -1,4 +1,4 @@
-import { mountAds, shareResult } from '@tgh/ui';
+import { shareResult } from '@tgh/ui';
 import {
   MISS_REACTIONS,
   REACTIONS,
@@ -22,7 +22,6 @@ import {
 import { DIFFICULTY_LABEL, pickRounds, type Placement, type RoundSpec } from './rounds';
 import { getBest, recordAverage } from './storage';
 
-mountAds();
 
 const ROUNDS = 5;
 const MASK = 1024; // 측정용 실루엣 해상도

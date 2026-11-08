@@ -61,7 +61,7 @@ a {
   display: flex;
   flex-direction: column;
   width: min(100%, 560px);
-  min-height: calc(100dvh - var(--ad-h, 0px));
+  min-height: 100dvh;
   margin: 0 auto;
   padding: 20px 16px 24px;
 }
@@ -576,7 +576,7 @@ summary:focus-visible {
   position: relative;
   width: min(
     100%,
-    calc((100dvh - var(--ad-h, 0px) - var(--chrome)) * var(--cols) / var(--rows) * 1.02)
+    calc((100dvh - var(--chrome)) * var(--cols) / var(--rows) * 1.02)
   );
   margin: 0 auto;
   container-type: inline-size;
@@ -844,11 +844,6 @@ summary:focus-visible {
   .demo-sel {
     width: calc(100% - 10px);
   }
-}
-
-/* 하단 광고가 있으면 아래 여백을 줄여 한 화면에 맞춘다 */
-.tgh-ads-bottom .page {
-  padding-bottom: 8px;
 }
 
 /* iOS 앱(Capacitor): 노치·홈 인디케이터 여백, 웹 전용 링크 숨김, 길게 눌러 선택 끄기 */
