@@ -65,6 +65,7 @@ describe('점수', () => {
 
 describe('generateBoard', () => {
   for (const [cols, rows] of [
+    [8, 11],
     [9, 13],
     [18, 9],
   ] as const) {

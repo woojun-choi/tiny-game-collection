@@ -10,14 +10,14 @@
 | URL | `cheonjiin.uzun-choi.com` |
 | Platforms | Mobile web + desktop web (responsive, touch + mouse), and an iOS app built from the same code (§11) |
 | UI language | Korean |
-| Session length | 2 minutes (fixed timer) |
+| Session length | 1 min 30 s on phones, 2 minutes on wide screens (fixed timer) |
 | Backend | None (static site, bundled dictionary, on-device storage only) |
 
 ---
 
 ## 1. Overview
 
-A grid of keycap tiles fills the screen. Each tile shows one Hangul syllable. The player drags a rectangle over tiles. If the selected syllables, read in order, spell a real dictionary word (2–4 syllables, e.g. 사 + 과 → **사과**), those keys pop out and disappear. The player has 2 minutes to clear as many keys as possible.
+A grid of keycap tiles fills the screen. Each tile shows one Hangul syllable. The player drags a rectangle over tiles. If the selected syllables, read in order, spell a real dictionary word (2–4 syllables, e.g. 사 + 과 → **사과**), those keys pop out and disappear. The player has 1 min 30 s (phones) or 2 minutes (wide screens) to clear as many keys as possible.
 
 This is an original take on the drag-a-rectangle grid genre. The win condition is spelling a real Korean word, and the look is a Hangul keyboard. It doesn't reuse any existing game's name, art, or layout.
 
@@ -98,16 +98,17 @@ Built by `packages/dict-pipeline` (`npm run build:cheonjiin -w @tgh/dict-pipelin
 The board has to contain plenty of findable words. A random grid of syllables almost never does, so the generator **plants** words.
 
 - **Grid size:**
-  - Portrait (or narrower than 700 px): 9 columns × 13 rows.
-  - Wide landscape: 18 columns × 9 rows.
-  - The daily puzzle is always 9 × 13, so everyone gets the same board.
+  - Portrait (or narrower than 700 px): 8 columns × 11 rows, 1 min 30 s.
+  - Wide landscape: 18 columns × 9 rows, 2 minutes.
+  - The daily puzzle is always 8 × 11 with 1 min 30 s, so everyone gets the same board.
+  - Phones used 9 × 13 with 2 minutes until 2026-11-09. It felt too long on a phone.
   - The grid size is fixed when a game starts.
 - **Algorithm:**
   1. Fill the grid by placing common words one at a time, in random empty spots.
      - Each word goes horizontally, vertically, or (for 4-syllable words) as a 2×2 block, so that it reads correctly in reading order.
   2. Stop when no planted word fits. Fill any leftover cells with syllables from planted words, so the leftovers still form "near misses".
   3. **Seeded:** a pure function `(seed, cols, rows, commonWords) → Board` with a seeded PRNG (mulberry32). The same seed always gives the same board, which the daily puzzle relies on. Any change to how the generator consumes random numbers changes every daily board, so keep the sequence stable.
-- **Quality check:** aim for at least one planted word per 3 cells (39 on 9 × 13). Try up to 8 times and keep the best board.
+- **Quality check:** aim for at least one planted word per 3 cells (29 on 8 × 11). Try up to 8 times and keep the best board.
 
 ---
 
@@ -157,7 +158,7 @@ cheonjiin.uzun-choi.com
 
 ### 6.5 Daily puzzle (오늘의 퍼즐)
 - One board per day, the same for everyone: the seed is a hash (FNV-1a) of the date in **KST**, so it changes at midnight Korean time.
-- Numbered from #1 on 2026-11-07.
+- Numbered from #1 on 2026-11-10. 2026-11-09 is #0: the board changed to 8 × 11 that day, so numbering and daily records (`cheonjiin.daily2`, `cheonjiin.streak2`) started over.
 - Only the first game of the day is recorded (`cheonjiin.daily`). Playing again shows the first result.
 - **Streak** (`cheonjiin.streak`): consecutive days with a recorded daily game, plus the best streak. Missing a day resets it.
 - Result screen: kicker "오늘의 퍼즐 #N", "연속 N일 · 최고 M일 · 내일 새 퍼즐", and the main button becomes "일반 게임".

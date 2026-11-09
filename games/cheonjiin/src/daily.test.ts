@@ -14,8 +14,9 @@ describe('오늘의 퍼즐', () => {
   });
 
   it('회차와 전날', () => {
-    expect(dayNumber('2026-11-07')).toBe(1);
-    expect(dayNumber('2026-12-01')).toBe(25);
+    expect(dayNumber('2026-11-09')).toBe(0);
+    expect(dayNumber('2026-11-10')).toBe(1);
+    expect(dayNumber('2026-12-01')).toBe(22);
     expect(prevDay('2026-03-01')).toBe('2026-02-28');
   });
 

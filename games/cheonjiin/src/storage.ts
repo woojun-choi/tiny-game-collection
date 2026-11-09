@@ -2,8 +2,9 @@ import { nextStreak, type Streak } from './daily';
 import { load, save } from './persist';
 
 const KEY = 'cheonjiin.best';
-const DAILY = 'cheonjiin.daily';
-const STREAK = 'cheonjiin.streak';
+// 오늘의 퍼즐 판을 9×13에서 8×11로 바꾸며(2026-11-09) 기록을 새로 시작했다
+const DAILY = 'cheonjiin.daily2';
+const STREAK = 'cheonjiin.streak2';
 
 function read<T>(key: string): T | null {
   const v = load(key);

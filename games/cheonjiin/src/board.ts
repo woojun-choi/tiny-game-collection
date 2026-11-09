@@ -40,7 +40,7 @@ function spot(r: number, c: number, len: number, shape: Shape, cols: number, row
   return len === 4 && r + 1 < rows && c + 1 < cols ? [i, i + 1, i + cols, i + cols + 1] : null;
 }
 
-/** 판 크기에 따른 최소 심은 단어 수. 칸의 약 3분의 1 (9×13 → 39, 18×9 → 54). */
+/** 판 크기에 따른 최소 심은 단어 수. 칸의 약 3분의 1 (8×11 → 29, 18×9 → 54). */
 export function minPlanted(cols: number, rows: number): number {
   return Math.floor((cols * rows) / 3);
 }
