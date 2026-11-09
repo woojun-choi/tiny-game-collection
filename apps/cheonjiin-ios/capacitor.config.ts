@@ -7,8 +7,6 @@ const config: CapacitorConfig = {
   webDir: '../../games/cheonjiin/dist',
   ios: {
     contentInset: 'never',
-    // 웹뷰 바운스·확대 같은 웹 느낌을 줄인다
-    scrollEnabled: false,
   },
 };
 

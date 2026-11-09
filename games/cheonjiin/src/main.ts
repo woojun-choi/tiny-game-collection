@@ -24,7 +24,16 @@ import { chime, clack, setSound, soundOn, thock } from './sound';
 import { getBest, getDaily, getStreak, recordDaily, recordScore } from './storage';
 
 // 웹은 비영리 공개(광고 없음). 광고는 앱에서만 붙인다.
-if (isApp) document.documentElement.classList.add('app');
+if (isApp) {
+  document.documentElement.classList.add('app');
+  // 앱은 스크롤을 켜 두되 핀치 확대는 막는다
+  document
+    .querySelector('meta[name="viewport"]')
+    ?.setAttribute(
+      'content',
+      'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover',
+    );
+}
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -48,6 +57,8 @@ interface State {
   mode: Mode;
   /** 오늘의 퍼즐 날짜 */
   day: string | null;
+  /** 제한 시간(ms) */
+  ms: number;
   /** 일시정지한 시각. 앱이 백그라운드로 가거나 설정을 열면 멈춘다 */
   pausedAt: number | null;
   board: Board;
@@ -125,6 +136,8 @@ function renderTitle(): void {
   el.hidden = best === null;
   if (best !== null) el.textContent = `최고 기록 ${best}점`;
 
+  $('limit').textContent = layout() === WIDE ? '2분' : '1분 30초';
+
   const day = todayKey();
   $('daily-no').textContent = `#${dayNumber(day)}`;
   const done = getDaily(day);
@@ -157,15 +170,19 @@ dailyBtn.addEventListener('click', () => void begin('daily', dailyBtn));
 
 // ---------- 게임 ----------
 
-/** 세로 화면은 9×13, 가로로 넓은 화면은 18×9. 판이 시작될 때 정하고 바꾸지 않는다. */
-function gridSize(): [number, number] {
-  return innerWidth >= 700 && innerWidth > innerHeight ? [18, 9] : [9, 13];
+/** 판 크기와 제한 시간. 휴대폰(세로)은 작은 판에 짧게, 넓은 가로 화면은 큰 판에 2분 */
+const PHONE = { cols: 8, rows: 11, ms: 90_000 };
+const WIDE = { cols: 18, rows: 9, ms: GAME_MS };
+
+/** 판이 시작될 때 정하고 바꾸지 않는다 */
+function layout(): typeof PHONE {
+  return innerWidth >= 700 && innerWidth > innerHeight ? WIDE : PHONE;
 }
 
 function startGame({ common }: Dict, mode: Mode): void {
-  // 오늘의 퍼즐은 모두 같은 판이어야 하니 화면과 상관없이 9×13
+  // 오늘의 퍼즐은 모두 같은 판이어야 하니 화면과 상관없이 휴대폰 판
   const day = mode === 'daily' ? todayKey() : null;
-  const [cols, rows] = day ? [9, 13] : gridSize();
+  const { cols, rows, ms } = day ? PHONE : layout();
   const seed = day ? dailySeed(day) : (Math.random() * 2 ** 32) >>> 0;
   const board = generateBoard(seed, cols, rows, common);
 
@@ -187,6 +204,7 @@ function startGame({ common }: Dict, mode: Mode): void {
   s = {
     mode,
     day,
+    ms,
     pausedAt: null,
     board,
     keys,
@@ -199,7 +217,7 @@ function startGame({ common }: Dict, mode: Mode): void {
   };
   shownScore = 0;
   scoreEl.textContent = '0';
-  timeEl.textContent = formatTime(GAME_MS);
+  timeEl.textContent = formatTime(ms);
   screens.game.classList.remove('danger');
   setCombo(0);
   setReadout('');
@@ -220,7 +238,7 @@ function formatTime(ms: number): string {
 let lastWholeSec = -1;
 function tick(): void {
   if (!s || s.ended || s.startedAt === null || s.pausedAt !== null) return;
-  const left = GAME_MS - (performance.now() - s.startedAt);
+  const left = s.ms - (performance.now() - s.startedAt);
   if (left <= 0) return endGame();
   timeEl.textContent = formatTime(left);
   const sec = Math.ceil(left / 1000);
@@ -583,6 +601,12 @@ $('again').addEventListener('click', async () => {
     dict = loadDict();
     toast('사전을 불러오지 못했어요');
   }
+});
+
+$('home').addEventListener('click', () => {
+  renderTitle();
+  show('title');
+  scrollTo(0, 0);
 });
 
 $('share').addEventListener('click', async () => {

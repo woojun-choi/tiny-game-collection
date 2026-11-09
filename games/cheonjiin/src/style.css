@@ -844,6 +844,11 @@ summary:focus-visible {
 }
 
 /* iOS 앱(Capacitor): 노치·홈 인디케이터 여백, 웹 전용 링크 숨김, 길게 눌러 선택 끄기 */
+.app,
+.app body {
+  overscroll-behavior: none;
+}
+
 .app body {
   -webkit-user-select: none;
   user-select: none;
