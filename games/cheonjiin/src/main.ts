@@ -75,6 +75,8 @@ let s: State | null = null;
 function show(name: keyof typeof screens): void {
   for (const [key, el] of Object.entries(screens)) el.hidden = key !== name;
   page.classList.toggle('wide', name === 'game' && (s?.board.cols ?? 0) > 9);
+  // 첫 화면은 한 화면에 맞춰 스크롤이 없게, 결과 화면만 길게 내려 본다
+  page.classList.toggle('fit', name === 'title');
   window.scrollTo(0, 0);
 }
 

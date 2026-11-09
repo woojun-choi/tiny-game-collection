@@ -70,6 +70,47 @@ a {
   width: min(100%, 1040px);
 }
 
+/* 첫 화면: 화면 높이에 딱 맞춘다. 남는 높이가 모자라면 그림 패널이 줄어든다 */
+.page.fit {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.page.fit .title {
+  min-height: 0;
+  padding: clamp(4px, 2dvh, 20px) 0;
+}
+
+.page.fit .strips {
+  flex: 0 1 auto;
+  min-height: 72px;
+  height: calc((min(100vw, 560px) - 52px) / 3 * 1.75);
+  margin-top: clamp(10px, 2.5dvh, 24px);
+}
+
+.page.fit .strip {
+  aspect-ratio: auto;
+  height: 100%;
+}
+
+.page.fit .lead {
+  margin-top: clamp(12px, 3dvh, 28px);
+}
+
+.page.fit .demo {
+  margin-top: clamp(8px, 2dvh, 20px);
+}
+
+.page.fit .rules,
+.page.fit .title-actions {
+  margin-top: clamp(12px, 3dvh, 28px);
+}
+
+.page.fit #title-best {
+  margin-top: clamp(8px, 1.6dvh, 16px);
+}
+
 /* ---------- 상단 ---------- */
 .top {
   display: flex;
