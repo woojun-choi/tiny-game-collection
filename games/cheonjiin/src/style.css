@@ -1103,3 +1103,67 @@ summary:focus-visible {
   font-size: 12px;
   line-height: 1.6;
 }
+
+/* 넓은 화면(태블릿·PC): 그림 패널은 가로 전체, 그 아래 왼쪽은 안내·시연·기록, 오른쪽은 게임 버튼 */
+@media (min-width: 700px) {
+  .page.fit {
+    width: min(100%, 760px);
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+  }
+
+  .page.fit .title {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      'mast mast'
+      'strips strips'
+      'lead actions'
+      'how actions'
+      'facts actions'
+      'status status';
+    column-gap: 32px;
+    align-content: center;
+    justify-items: center;
+  }
+
+  .page.fit .mast {
+    grid-area: mast;
+  }
+
+  .page.fit .strips {
+    grid-area: strips;
+    flex: none;
+    width: 100%;
+    height: clamp(160px, 100dvh - 500px, 360px);
+    max-height: none;
+  }
+
+  .page.fit .lead {
+    grid-area: lead;
+  }
+
+  .page.fit .how {
+    grid-area: how;
+  }
+
+  .page.fit .title-facts {
+    grid-area: facts;
+  }
+
+  .page.fit .title-actions {
+    grid-area: actions;
+    align-self: center;
+    width: 100%;
+    margin-top: 28px;
+  }
+
+  .page.fit .title-actions .btn {
+    min-height: 64px;
+  }
+
+  .page.fit #title-status {
+    grid-area: status;
+  }
+}
