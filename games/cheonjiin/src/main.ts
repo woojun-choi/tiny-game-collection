@@ -77,6 +77,10 @@ function show(name: keyof typeof screens): void {
   page.classList.toggle('wide', name === 'game' && (s?.board.cols ?? 0) > 9);
   // 첫 화면은 한 화면에 맞춰 스크롤이 없게, 결과 화면만 길게 내려 본다
   page.classList.toggle('fit', name === 'title');
+  if (name !== 'title') {
+    $('how-card').hidden = true;
+    $('how-open').setAttribute('aria-expanded', 'false');
+  }
   window.scrollTo(0, 0);
 }
 
@@ -133,25 +137,33 @@ sheet.addEventListener('click', (e) => {
 const dailyBtn = $<HTMLButtonElement>('daily');
 
 function renderTitle(): void {
-  const best = getBest();
-  const el = $('title-best');
-  el.hidden = best === null;
-  if (best !== null) el.textContent = `최고 기록 ${best}점`;
-
   $('limit').textContent = layout() === WIDE ? '2분' : '1분 30초';
 
+  const best = getBest();
   const day = todayKey();
   $('daily-no').textContent = `#${dayNumber(day)}`;
   const done = getDaily(day);
   const streak = liveStreak(getStreak(), day);
-  const status = $('daily-status');
-  const parts = [
-    ...(done ? [`오늘의 퍼즐 ${done.score}점`] : []),
-    ...(streak ? [`연속 ${streak}일`] : []),
-  ];
-  status.hidden = !parts.length;
-  status.textContent = parts.join(' · ');
+
+  // 기록이 하나도 없으면 칸을 통째로 숨긴다
+  $('title-facts').hidden = best === null && !done && !streak;
+  $('title-best').textContent = best === null ? '—' : String(best);
+  $('title-daily').innerHTML = done
+    ? `<span class="num">${done.score}</span><small>점</small>`
+    : '아직';
+  const streakEl = $('title-streak');
+  streakEl.hidden = !streak;
+  streakEl.textContent = `연속 ${streak}일`;
 }
+
+const howBtn = $('how-open');
+const howCard = $('how-card');
+function toggleHow(open = howCard.hidden): void {
+  howCard.hidden = !open;
+  howBtn.setAttribute('aria-expanded', String(open));
+}
+howBtn.addEventListener('click', () => toggleHow());
+howCard.addEventListener('click', () => toggleHow(false));
 
 async function begin(mode: Mode, btn: HTMLButtonElement): Promise<void> {
   const status = $('title-status');

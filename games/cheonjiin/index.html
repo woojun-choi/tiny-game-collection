@@ -69,24 +69,48 @@
 
         <p class="lead">드래그로 키를 묶어 단어를 만드세요</p>
 
-        <div class="demo" aria-hidden="true">
-          <span class="demo-word">사과 <small>+2</small></span>
-          <div class="demo-keys">
-            <span class="cap mid"><b>사</b></span>
-            <span class="cap mid"><b>과</b></span>
-            <span class="demo-sel"></span>
+        <!-- 시연을 누르면 점수 규칙이 그 자리에 겹쳐 뜬다 -->
+        <div class="how">
+          <button
+            id="how-open"
+            class="demo"
+            type="button"
+            aria-expanded="false"
+            aria-controls="how-card"
+            aria-label="점수 규칙 보기"
+          >
+            <span class="demo-word" aria-hidden="true">사과 <small>+2</small></span>
+            <span class="demo-keys" aria-hidden="true">
+              <span class="cap mid"><b>사</b></span>
+              <span class="cap mid"><b>과</b></span>
+              <span class="demo-sel"></span>
+            </span>
+            <span class="how-badge" aria-hidden="true">?</span>
+          </button>
+          <div id="how-card" class="how-card" hidden>
+            <ul class="rules">
+              <li><b>2</b>점 두 글자</li>
+              <li><b>6</b>점 세 글자</li>
+              <li><b>12</b>점 네 글자</li>
+            </ul>
+            <p class="rule-note">
+              3초 안에 이어서 맞히면 콤보 · 제한 시간 <span id="limit">1분 30초</span><br />드래그
+              대신 두 키를 차례로 눌러도 돼요
+            </p>
           </div>
         </div>
 
-        <ul class="rules">
-          <li><b>2</b>점 두 글자</li>
-          <li><b>6</b>점 세 글자</li>
-          <li><b>12</b>점 네 글자</li>
-        </ul>
-        <p class="rule-note">
-          3초 안에 이어서 맞히면 콤보 · 제한 시간 <span id="limit">1분 30초</span><br />드래그 대신
-          두 키를 차례로 눌러도 돼요
-        </p>
+        <dl id="title-facts" class="facts title-facts" hidden>
+          <div>
+            <dt>최고 기록</dt>
+            <dd><span id="title-best" class="num">—</span><small>점</small></dd>
+          </div>
+          <div>
+            <dt>오늘의 퍼즐</dt>
+            <dd id="title-daily">—</dd>
+            <dd id="title-streak" class="streak" hidden></dd>
+          </div>
+        </dl>
 
         <div class="title-actions">
           <button id="start" class="btn primary" type="button">시작</button>
@@ -94,8 +118,6 @@
             오늘의 퍼즐 <span id="daily-no" class="num"></span>
           </button>
         </div>
-        <p id="title-best" class="meta" hidden></p>
-        <p id="daily-status" class="meta" hidden></p>
         <p id="title-status" class="meta" role="status"></p>
       </section>
 
