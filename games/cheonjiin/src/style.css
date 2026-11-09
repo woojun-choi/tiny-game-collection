@@ -1167,3 +1167,18 @@ summary:focus-visible {
     grid-area: status;
   }
 }
+
+/* 큰 가로 화면(iPad 가로·PC): 첫 화면과 게임 판을 더 넓게 */
+@media (min-width: 1100px) {
+  .page.fit {
+    width: min(100%, 980px);
+  }
+
+  .page.fit .strips {
+    height: clamp(160px, 100dvh - 520px, 440px);
+  }
+
+  .page.wide {
+    width: min(100%, 1280px);
+  }
+}
