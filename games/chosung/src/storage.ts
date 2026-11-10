@@ -1,20 +1,14 @@
+import { load, save } from '@tgh/ui/app';
+
 const PREFIX = 'giyeoksiot.best';
 
 function read(key: string): number | null {
-  try {
-    const v = localStorage.getItem(key);
-    return v === null ? null : Number(v) || 0;
-  } catch {
-    return null;
-  }
+  const v = load(key);
+  return v === null ? null : Number(v) || 0;
 }
 
 function write(key: string, value: number): void {
-  try {
-    localStorage.setItem(key, String(value));
-  } catch {
-    // 시크릿 모드 등 저장 불가 환경은 무시
-  }
+  save(key, String(value));
 }
 
 /** 전체 최고 기록 (pair 생략) 또는 초성 쌍별 최고 기록. */

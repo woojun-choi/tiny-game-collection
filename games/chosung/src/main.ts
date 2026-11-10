@@ -1,8 +1,20 @@
-import { shareResult } from '@tgh/ui';
+import { isApp, share } from '@tgh/ui/app';
 import { loadIndex, loadPair, type DictIndex, type PairDict } from './dict';
 import { BONUS_MS, Game, MAX_MS, REASON_TEXT, missedWords, shareText } from './game';
 import { SPRING, flashInvert, play, reducedMotion } from './motion';
 import { getBest, recordScore } from './storage';
+
+// 앱에서는 웹 전용 머리말(포트폴리오 링크)을 숨기고 안전 영역을 띄운다
+if (isApp) {
+  document.documentElement.classList.add('app');
+  // 핀치 확대는 막고, 노치 아래까지 그린 뒤 안전 영역만큼 띄운다
+  document
+    .querySelector('meta[name="viewport"]')
+    ?.setAttribute(
+      'content',
+      'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content',
+    );
+}
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -21,6 +33,8 @@ let current: { pair: string; dict: PairDict } | null = null;
 let game: Game | null = null;
 let nextPair: string | null = null;
 let running = false;
+let paused = false;
+let raf = 0;
 let lastFrame = 0;
 let lastWholeSec = 0;
 let composing = false;
@@ -69,6 +83,8 @@ async function startGame(pair: string): Promise<void> {
   current = { pair, dict };
   game = new Game(pair, dict.set);
   running = false;
+  paused = false;
+  $('paused').hidden = true;
   lastWholeSec = Math.ceil(game.timeLeft / 1000);
 
   pairEl.replaceChildren(
@@ -134,19 +150,41 @@ function frame(now: number): void {
     endGame();
     return;
   }
-  requestAnimationFrame(frame);
+  raf = requestAnimationFrame(frame);
 }
 
 function startTimer(): void {
-  if (running || !game || game.over) return;
+  if (running || paused || !game || game.over) return;
   running = true;
   lastFrame = performance.now();
-  requestAnimationFrame(frame);
+  raf = requestAnimationFrame(frame);
 }
 
-// 탭이 가려진 동안은 멈춘다. 돌아왔을 때 그 사이 시간을 빼지 않도록 기준 시각을 다시 잡는다.
+// ---------- 일시정지 ----------
+// 탭을 가리거나 앱을 내리면 멈춘다. 돌아오면 바로 흐르지 않고 '계속하기'를 눌러야 다시 흐른다.
+// 앱에서는 그 사이 키보드가 내려가므로, 버튼을 누르는 순간 입력칸에 다시 포커스를 줘 키보드를 올린다.
+
+function pause(): void {
+  if (!running || !game || game.over) return;
+  running = false;
+  paused = true;
+  cancelAnimationFrame(raf);
+  input.blur();
+  $('paused').hidden = false;
+  $('resume').focus();
+}
+
+function resume(): void {
+  if (!paused) return;
+  paused = false;
+  $('paused').hidden = true;
+  startTimer();
+  input.focus();
+}
+
+$('resume').addEventListener('click', resume);
 document.addEventListener('visibilitychange', () => {
-  if (!document.hidden) lastFrame = performance.now();
+  if (document.hidden) pause();
 });
 
 function floatText(text: string): void {
@@ -410,7 +448,7 @@ let toastTimer = 0;
 $('share').addEventListener('click', async () => {
   if (!game || !current) return;
   try {
-    const outcome = await shareResult(shareText(current.pair, game.found));
+    const outcome = await share(shareText(current.pair, game.found));
     if (outcome !== 'copied') return;
   } catch {
     return;

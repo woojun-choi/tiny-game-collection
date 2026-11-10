@@ -16,6 +16,7 @@ export function pairFile(pair: string): string {
   return [...pair].map((c) => CHOSUNG_LIST.indexOf(c)).join('-');
 }
 
+// 상대경로: 웹 루트에서도, 앱(capacitor://localhost/)에서도 같은 위치.
 async function getJson<T>(path: string): Promise<T> {
   const res = await fetch(path);
   if (!res.ok) throw new Error(`${path}: ${res.status}`);
@@ -23,7 +24,7 @@ async function getJson<T>(path: string): Promise<T> {
 }
 
 export function loadIndex(): Promise<DictIndex> {
-  return getJson<DictIndex>('/dict/index.json');
+  return getJson<DictIndex>('dict/index.json');
 }
 
 const cache = new Map<string, Promise<PairDict>>();
@@ -32,9 +33,10 @@ const cache = new Map<string, Promise<PairDict>>();
 export function loadPair(pair: string): Promise<PairDict> {
   let p = cache.get(pair);
   if (!p) {
-    p = getJson<{ words: [string, number][] }>(`/dict/${pairFile(pair)}.json`).then(
-      ({ words }) => ({ words, set: new Set(words.map(([w]) => w)) }),
-    );
+    p = getJson<{ words: [string, number][] }>(`dict/${pairFile(pair)}.json`).then(({ words }) => ({
+      words,
+      set: new Set(words.map(([w]) => w)),
+    }));
     p.catch(() => cache.delete(pair));
     cache.set(pair, p);
   }

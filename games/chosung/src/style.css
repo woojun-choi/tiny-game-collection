@@ -621,3 +621,37 @@ a:focus-visible {
     padding-top: 24px;
   }
 }
+
+/* ---------- 일시정지: 초성을 가린다 ---------- */
+.paused {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: var(--bg);
+}
+
+.paused p {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+/* ---------- iOS 앱 ---------- */
+.app,
+.app body {
+  overscroll-behavior: none;
+}
+
+.app .page {
+  padding-top: max(20px, env(safe-area-inset-top));
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+}
+
+.app .crumb {
+  visibility: hidden;
+}
