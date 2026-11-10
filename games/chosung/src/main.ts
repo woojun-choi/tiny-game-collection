@@ -1,4 +1,5 @@
-import { isApp, share } from '@tgh/ui/app';
+import { Keyboard } from '@capacitor/keyboard';
+import { buzz, isApp, share } from '@tgh/ui/app';
 import { loadIndex, loadPair, type DictIndex, type PairDict } from './dict';
 import { BONUS_MS, Game, MAX_MS, REASON_TEXT, missedWords, shareText } from './game';
 import { SPRING, flashInvert, play, reducedMotion } from './motion';
@@ -14,6 +15,11 @@ if (isApp) {
       'content',
       'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content',
     );
+  // 키보드 위 이전·다음·완료 막대는 칸이 하나뿐이라 자리만 차지한다
+  void Keyboard.setAccessoryBarVisible({ isVisible: false }).catch(() => {});
+  const root = document.documentElement;
+  void Keyboard.addListener('keyboardWillShow', () => root.classList.add('kb'));
+  void Keyboard.addListener('keyboardWillHide', () => root.classList.remove('kb'));
 }
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -35,6 +41,8 @@ let nextPair: string | null = null;
 let running = false;
 let paused = false;
 let raf = 0;
+/** 결과 화면이 뜬 시각. 판 끝에 치던 Enter가 바로 재시작으로 이어지지 않게 */
+let resultAt = 0;
 let lastFrame = 0;
 let lastWholeSec = 0;
 let composing = false;
@@ -138,6 +146,7 @@ function renderTimer(): void {
       play(timerNum, [{ transform: 'scale(1.35)' }, { transform: 'none' }], { duration: 200 });
     }
     if (ms > 0 && ms < 3000 && !reducedMotion()) flashInvert(document.body, 150);
+    if (ms > 0 && ms < 3000 && running) buzz('light');
   }
 }
 
@@ -214,6 +223,7 @@ function submit(): void {
   const result = game.submit(raw);
 
   if (result.ok) {
+    buzz('medium');
     input.value = '';
     feedback.textContent = '';
     renderCount();
@@ -240,6 +250,7 @@ function submit(): void {
     );
   } else {
     // 입력은 남겨둬서 바로 고칠 수 있게
+    buzz('error');
     feedback.textContent = REASON_TEXT[result.reason];
     play(
       input,
@@ -308,6 +319,11 @@ input.addEventListener('keydown', (e) => {
 });
 input.addEventListener('input', startTimer);
 $('form').addEventListener('submit', (e) => e.preventDefault());
+// 버튼을 눌러도 입력칸 포커스를 뺏지 않는다. 뺏기면 모바일 키보드가 내려갔다 다시 올라온다.
+// 다만 한글 조합 중이면 포커스가 빠져야 마지막 글자가 확정되므로 그때는 그대로 둔다.
+$('submit').addEventListener('pointerdown', (e) => {
+  if (!composing) e.preventDefault();
+});
 $('submit').addEventListener('click', submit);
 
 // ---------- 결과 ----------
@@ -316,6 +332,7 @@ function endGame(): void {
   if (!game || !current) return;
   running = false;
   input.blur();
+  buzz('heavy');
   const { pair, dict } = current;
   const found = game.found;
   const { best, isNew } = recordScore(pair, found.length);
@@ -341,6 +358,7 @@ function endGame(): void {
   $('r-coverage').textContent = `가능한 단어 ${dict.words.length}개 중 ${found.length}개 발견`;
 
   show('result');
+  resultAt = performance.now();
 
   // 반전 화면으로 세로 와이프
   play(screens.result, [{ clipPath: 'inset(0 0 100% 0)' }, { clipPath: 'inset(0 0 0 0)' }], {
@@ -458,6 +476,21 @@ $('share').addEventListener('click', async () => {
   toast.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = window.setTimeout(() => toast.classList.remove('show'), 1500);
+});
+
+// ---------- 키보드로 시작·다시하기 ----------
+// 하드웨어 키보드(iPad, PC)로 칠 때 손을 화면으로 옮기지 않아도 되게 한다.
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter' || e.isComposing || e.repeat) return;
+  // 버튼에 포커스가 있으면 Enter가 그 버튼을 이미 누른다
+  if (e.target instanceof HTMLButtonElement) return;
+  if (!screens.title.hidden && !startBtn.disabled) {
+    e.preventDefault();
+    startBtn.click();
+  } else if (!screens.result.hidden && performance.now() - resultAt > 800) {
+    e.preventDefault();
+    $('again').click();
+  }
 });
 
 // ---------- 시작 ----------

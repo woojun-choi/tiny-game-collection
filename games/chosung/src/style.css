@@ -652,6 +652,27 @@ a:focus-visible {
   padding-bottom: max(16px, env(safe-area-inset-bottom));
 }
 
-.app .crumb {
-  visibility: hidden;
+/* 머리말은 포트폴리오 링크뿐이라 앱에서는 자리째 뺀다 */
+.app .top {
+  display: none;
+}
+
+/* 키보드가 올라와 있는 동안(휴대폰): 초성을 줄여 찾은 단어가 키보드 위에 보이게. iPad는 자리가 넉넉하다 */
+@media (max-width: 599px) {
+  .kb .stage {
+    margin-top: 20px;
+  }
+
+  .kb .pair {
+    margin: 12px 0 4px;
+    font-size: min(28vw, 140px);
+  }
+
+  .kb .entry-block {
+    margin-top: 12px;
+  }
+}
+
+.kb .credit {
+  display: none;
 }
