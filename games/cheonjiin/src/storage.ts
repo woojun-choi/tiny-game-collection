@@ -1,5 +1,5 @@
 import { nextStreak, type Streak } from './daily';
-import { load, save } from './persist';
+import { load, save } from '@tgh/ui/app';
 
 const KEY = 'cheonjiin.best';
 // 오늘의 퍼즐 판을 9×13에서 8×11로 바꾸며(2026-11-09) 기록을 새로 시작했다

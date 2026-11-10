@@ -2,7 +2,7 @@
  * 기계식 키보드 소리. 음원 파일 없이 Web Audio로 합성한다(용량 0).
  * 기본은 꺼짐. 켜면 기기 저장소에 기억한다.
  */
-import { load, save } from './persist';
+import { load, save } from '@tgh/ui/app';
 
 const KEY = 'cheonjiin.sound';
 let ctx: AudioContext | null = null;
