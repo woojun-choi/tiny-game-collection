@@ -1,6 +1,8 @@
 import { generateBoard, type Board } from './board';
 import { dailySeed, dayNumber, liveStreak, todayKey } from './daily';
 import { loadDict, type Dict } from './dict';
+import { lookup } from './meaning';
+import { MAX_LEVEL, nextLevel, stage } from './stage';
 import {
   CLEAR_BONUS,
   COMBO,
@@ -21,7 +23,19 @@ import {
   share,
 } from './native';
 import { chime, clack, setSound, soundOn, thock } from './sound';
-import { getBest, getDaily, getStreak, recordDaily, recordScore } from './storage';
+import {
+  getBest,
+  getDaily,
+  getStage,
+  getStreak,
+  hasPlayed,
+  isAdFree,
+  markPlayed,
+  recordDaily,
+  setAdFree,
+  recordScore,
+  recordStage,
+} from './storage';
 
 // 웹은 비영리 공개(광고 없음). 광고는 앱에서만 붙인다.
 if (isApp) {
@@ -37,6 +51,9 @@ if (isApp) {
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 
+// 광고는 앱 빌드에만 있다(__ADS__). 웹 번들에는 이 import가 아예 빠진다.
+const ads = __ADS__ ? import('./ads') : null;
+
 const page = document.querySelector<HTMLElement>('.page')!;
 const screens = { title: $('title'), game: $('game'), result: $('result') };
 const boardEl = $('board');
@@ -51,7 +68,7 @@ const reduce = matchMedia('(prefers-reduced-motion: reduce)');
 
 let dict: Promise<Dict> = loadDict();
 
-type Mode = 'normal' | 'daily';
+type Mode = 'normal' | 'daily' | 'stage';
 
 interface State {
   mode: Mode;
@@ -59,6 +76,9 @@ interface State {
   day: string | null;
   /** 제한 시간(ms) */
   ms: number;
+  /** 단계 모드의 단계와 목표 점수. 다른 모드는 0 */
+  level: number;
+  target: number;
   /** 일시정지한 시각. 앱이 백그라운드로 가거나 설정을 열면 멈춘다 */
   pausedAt: number | null;
   board: Board;
@@ -81,7 +101,99 @@ function show(name: keyof typeof screens): void {
     $('how-card').hidden = true;
     $('how-open').setAttribute('aria-expanded', 'false');
   }
+  void placeBanner(name);
   window.scrollTo(0, 0);
+}
+
+// ---------- 광고(앱) ----------
+
+/** 첫 판, 오늘의 퍼즐, '오늘 하루 배너 끄기'에는 배너가 없다 */
+function bannersAllowed(): boolean {
+  return !!ads && hasPlayed() && s?.mode !== 'daily' && !isAdFree(todayKey());
+}
+
+/** 플레이 중 배너는 판이 줄어들지 않는 화면에서만(작은 휴대폰·작은 태블릿 가로는 뺀다) */
+function boardFitsWithBanner(): boolean {
+  if (!s) return false;
+  const chrome = parseFloat(getComputedStyle(caseEl).getPropertyValue('--chrome')) || 300;
+  const banner = innerWidth >= 700 ? 90 : 60;
+  const { cols, rows } = s.board;
+  const byHeight = (innerHeight - chrome - banner) * (cols / rows) * 1.02;
+  return byHeight >= caseEl.parentElement!.clientWidth;
+}
+
+async function placeBanner(name: keyof typeof screens): Promise<void> {
+  if (!ads) return;
+  const a = await ads;
+  const ok = bannersAllowed();
+  $('ad-free').hidden = !(name === 'result' && ok);
+  if (name === 'game' && ok && boardFitsWithBanner()) await a.showBanner('top');
+  else if (name === 'result' && ok) await a.showBanner('bottom');
+  else await a.hideBanner();
+}
+
+if (ads)
+  void ads.then(async (a) => {
+    if (await a.needsPrivacyOptions()) $('ad-privacy-row').hidden = false;
+  });
+$('ad-privacy').addEventListener('click', () => void ads?.then((a) => a.showPrivacyOptions()));
+
+$('ad-free').addEventListener('click', async () => {
+  if (!ads) return;
+  const a = await ads;
+  const r = await a.rewarded();
+  if (r === 'rewarded') {
+    setAdFree(todayKey());
+    $('ad-free').hidden = true;
+    await a.hideBanner();
+    toast('오늘은 배너가 안 나와요');
+  } else if (r === 'closed') toast('광고를 끝까지 보면 오늘 배너가 사라져요');
+  else toast('지금은 광고가 없어요');
+});
+
+/** 보상형(힌트·+30초): 앱에서만, 오늘의 퍼즐 제외, 남은 10초 이하에서 한 판 1번 */
+let rewardUsed = false;
+function maybeOfferReward(secLeft: number): void {
+  const box = $('reward');
+  const offer = !!ads && !!s && s.mode !== 'daily' && !rewardUsed && secLeft <= 10;
+  if (box.hidden === !offer) return;
+  box.hidden = !offer;
+}
+
+async function useReward(kind: 'hint' | 'time'): Promise<void> {
+  if (!ads || !s || rewardUsed || s.ended) return;
+  rewardUsed = true;
+  $('reward').hidden = true;
+  pause();
+  const r = await (await ads).rewarded();
+  if (r !== 'rewarded') {
+    // 끝까지 안 봤거나 광고가 없으면 기회를 돌려준다
+    rewardUsed = false;
+    resume();
+    toast(r === 'closed' ? '광고를 끝까지 보면 받을 수 있어요' : '지금은 광고가 없어요');
+    return;
+  }
+  if (kind === 'time') {
+    s.ms += 30_000;
+    toast('+30초');
+  } else showHint();
+  resume();
+}
+$('reward-hint').addEventListener('click', () => void useReward('hint'));
+$('reward-time').addEventListener('click', () => void useReward('time'));
+
+/** 아직 판에 그대로 남은 심은 단어 하나의 첫 글자를 깜빡인다(긴 단어 먼저) */
+function showHint(): void {
+  if (!s) return;
+  const cells = s.board.cells;
+  const left = s.board.planted
+    .filter((p) => p.cells.every((i, k) => cells[i] === p.word[k]))
+    .sort((a, b) => b.word.length - a.word.length);
+  const pick = left[0];
+  if (!pick) return toast('남은 단어가 없어요');
+  const key = s.keys[pick.cells[0]!]!;
+  key.classList.add('hinted');
+  setTimeout(() => key.classList.remove('hinted'), 4000);
 }
 
 function toast(text: string): void {
@@ -141,12 +253,15 @@ function renderTitle(): void {
 
   const best = getBest();
   const day = todayKey();
+  const st = getStage();
+  $('stage').textContent = `단계 도전 · ${st.level}단계`;
+  $('title-stage').textContent = st.best ? String(st.best) : '—';
   $('daily-no').textContent = `#${dayNumber(day)}`;
   const done = getDaily(day);
   const streak = liveStreak(getStreak(), day);
 
   // 기록이 하나도 없으면 칸을 통째로 숨긴다
-  $('title-facts').hidden = best === null && !done && !streak;
+  $('title-facts').hidden = best === null && !done && !streak && !st.best;
   $('title-best').textContent = best === null ? '—' : String(best);
   $('title-daily').innerHTML = done
     ? `<span class="num">${done.score}</span><small>점</small>`
@@ -181,6 +296,8 @@ async function begin(mode: Mode, btn: HTMLButtonElement): Promise<void> {
 }
 startBtn.addEventListener('click', () => void begin('normal', startBtn));
 dailyBtn.addEventListener('click', () => void begin('daily', dailyBtn));
+const stageBtn = $<HTMLButtonElement>('stage');
+stageBtn.addEventListener('click', () => void begin('stage', stageBtn));
 
 // ---------- 게임 ----------
 
@@ -195,10 +312,13 @@ function layout(): typeof PHONE {
 
 function startGame({ common }: Dict, mode: Mode): void {
   // 오늘의 퍼즐은 모두 같은 판이어야 하니 화면과 상관없이 휴대폰 판
+  // 단계 모드도 목표 점수가 기기마다 같도록 휴대폰 판
   const day = mode === 'daily' ? todayKey() : null;
-  const { cols, rows, ms } = day ? PHONE : layout();
+  const st = mode === 'stage' ? stage(getStage().level) : null;
+  const { cols, rows } = day || st ? PHONE : layout();
+  const ms = st?.ms ?? (day ? PHONE : layout()).ms;
   const seed = day ? dailySeed(day) : (Math.random() * 2 ** 32) >>> 0;
-  const board = generateBoard(seed, cols, rows, common);
+  const board = generateBoard(seed, cols, rows, common, st?.board);
 
   caseEl.style.setProperty('--cols', String(cols));
   caseEl.style.setProperty('--rows', String(rows));
@@ -219,6 +339,8 @@ function startGame({ common }: Dict, mode: Mode): void {
     mode,
     day,
     ms,
+    level: st?.level ?? 0,
+    target: st?.target ?? 0,
     pausedAt: null,
     board,
     keys,
@@ -238,10 +360,24 @@ function startGame({ common }: Dict, mode: Mode): void {
   $('paused').hidden = true;
   $('hint').textContent = day
     ? `오늘의 퍼즐 #${dayNumber(day)} · 첫 판만 기록돼요`
-    : '첫 드래그부터 시간이 흘러요';
+    : st
+      ? `${st.level}단계 · ${st.target}점을 넘기면 다음 단계`
+      : '첫 드래그부터 시간이 흘러요';
+  $('stagebar').hidden = !st;
+  renderStageBar();
   $('found').replaceChildren();
   $('found-count').textContent = '0';
+  rewardUsed = false;
+  $('reward').hidden = true;
   show('game');
+}
+
+/** 단계 모드: 목표 점수까지 얼마나 왔는지 */
+function renderStageBar(): void {
+  if (!s?.target) return;
+  $('stage-label').textContent = `${s.level}단계 · 목표 ${s.target}`;
+  $('stage-fill').style.width = `${Math.min(100, (s.score / s.target) * 100)}%`;
+  $('stagebar').classList.toggle('done', s.score >= s.target);
 }
 
 function formatTime(ms: number): string {
@@ -256,6 +392,7 @@ function tick(): void {
   if (left <= 0) return endGame();
   timeEl.textContent = formatTime(left);
   const sec = Math.ceil(left / 1000);
+  maybeOfferReward(sec);
   if (sec <= 10 && sec !== lastWholeSec) {
     screens.game.classList.add('danger');
     if (!reduce.matches)
@@ -449,6 +586,7 @@ function success(keys: number[], word: string): void {
   const gained = points(word.length, s.combo);
   s.score += gained;
   s.found.push(word);
+  renderStageBar();
   for (const i of keys) s.board.cells[i] = null;
 
   keys.forEach((i, k) => flyOff(s!.keys[i]!, k));
@@ -474,6 +612,7 @@ function success(keys: number[], word: string): void {
 
   if (s.board.cells.every((c) => c === null)) {
     s.score += CLEAR_BONUS;
+    renderStageBar();
     hapticClear();
     toast(`판 전부 비움! +${CLEAR_BONUS}`);
     rollScore();
@@ -537,15 +676,36 @@ function endGame(): void {
   s.ended = true;
   anchor = hover = null;
   selEl.hidden = true;
+  $('reward').hidden = true;
   renderResult();
+  // 첫 판의 결과 화면까지는 광고 없이. 그다음부터 배너가 붙는다
+  const first = !hasPlayed();
   show('result');
+  if (first) markPlayed();
 }
 
 function renderResult(): void {
   if (!s) return;
   $('r-score').textContent = String(s.score);
   const dailyEl = $('r-daily');
-  if (s.day) {
+  $('r-record').textContent = '신기록!';
+  if (s.mode === 'stage') {
+    const passed = s.score >= s.target;
+    const prevBest = getStage().best;
+    const next = nextLevel(s.level, s.score);
+    recordStage(s.level, passed, next);
+    $('r-kicker').textContent = passed ? `${s.level}단계 통과!` : `${s.level}단계`;
+    $('r-best').textContent = passed
+      ? s.level === MAX_LEVEL
+        ? `마지막 단계 · 목표 ${s.target}점 달성`
+        : `목표 ${s.target}점 달성`
+      : `목표 ${s.target}점까지 ${s.target - s.score}점 남았어요`;
+    $('r-record').hidden = !(passed && s.level > prevBest);
+    $('r-record').textContent = '최고 단계!';
+    dailyEl.hidden = true;
+    $('again').textContent =
+      passed && s.level < MAX_LEVEL ? `${next}단계로` : `${s.level}단계 다시`;
+  } else if (s.day) {
     const { first, record, streak } = recordDaily({
       day: s.day,
       score: s.score,
@@ -602,15 +762,71 @@ function chipList(words: string[]): HTMLUListElement {
   ul.className = 'chips';
   for (const w of words) {
     const li = document.createElement('li');
-    li.textContent = w;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.dataset.word = w;
+    btn.textContent = w;
+    li.append(btn);
     ul.append(li);
   }
   return ul;
 }
 
+// ---------- 단어 뜻 ----------
+
+const meaningEl = $<HTMLDialogElement>('meaning');
+/** 결과 화면에 보이는 단어 순서. 이전·다음 단어로 넘길 때 쓴다 */
+let meaningList: string[] = [];
+let meaningAt = 0;
+
+async function showMeaning(at: number): Promise<void> {
+  meaningAt = at;
+  const word = meaningList[at]!;
+  $('m-word').textContent = word;
+  $('m-pos').textContent = '';
+  $('m-defs').replaceChildren();
+  $('m-status').textContent = '뜻 찾는 중…';
+  $<HTMLButtonElement>('m-prev').disabled = at === 0;
+  $<HTMLButtonElement>('m-next').disabled = at === meaningList.length - 1;
+  if (!meaningEl.open) meaningEl.showModal();
+  try {
+    const m = await lookup(word);
+    if (meaningList[meaningAt] !== word) return; // 그사이 다른 단어로 넘어감
+    $('m-status').textContent = m ? '' : '사전에 풀이가 없어요';
+    $('m-pos').textContent = m?.pos ?? '';
+    $('m-defs').replaceChildren(
+      ...(m?.defs ?? []).map((d) => {
+        const li = document.createElement('li');
+        li.textContent = d;
+        return li;
+      }),
+    );
+  } catch {
+    if (meaningList[meaningAt] === word) $('m-status').textContent = '뜻을 불러오지 못했어요';
+  }
+}
+
+screens.result.addEventListener('click', (e) => {
+  const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('button[data-word]');
+  if (!btn) return;
+  meaningList = [...screens.result.querySelectorAll<HTMLElement>('button[data-word]')].map(
+    (b) => b.dataset.word!,
+  );
+  void showMeaning(meaningList.indexOf(btn.dataset.word!));
+});
+$('m-prev').addEventListener('click', () => void showMeaning(Math.max(0, meaningAt - 1)));
+$('m-next').addEventListener(
+  'click',
+  () => void showMeaning(Math.min(meaningList.length - 1, meaningAt + 1)),
+);
+$('m-close').addEventListener('click', () => meaningEl.close());
+meaningEl.addEventListener('click', (e) => {
+  if (e.target === meaningEl) meaningEl.close();
+});
+
 $('again').addEventListener('click', async () => {
   try {
-    startGame(await dict, 'normal');
+    startGame(await dict, s?.mode === 'stage' ? 'stage' : 'normal');
   } catch {
     dict = loadDict();
     toast('사전을 불러오지 못했어요');
@@ -630,7 +846,9 @@ $('share').addEventListener('click', async () => {
   const text = [
     s.day
       ? `천지인 오늘의 퍼즐 #${dayNumber(s.day)} ⌨️ ${s.score}점 · ${s.found.length}단어`
-      : `천지인 ⌨️ ${s.score}점 · ${s.found.length}단어`,
+      : s.mode === 'stage'
+        ? `천지인 ${s.level}단계 ⌨️ ${s.score}점 · ${s.found.length}단어`
+        : `천지인 ⌨️ ${s.score}점 · ${s.found.length}단어`,
     ...(longest ? [`최장 단어: ${longest}`] : []),
     ...(streak > 1 ? [`연속 ${streak}일째`] : []),
     'cheonjiin.uzun-choi.com',

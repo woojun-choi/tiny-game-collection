@@ -45,12 +45,25 @@ export function minPlanted(cols: number, rows: number): number {
   return Math.floor((cols * rows) / 3);
 }
 
+/** 단계 모드에서 판을 어렵게 만드는 손잡이. 안 주면 원래 판(오늘의 퍼즐과 같은 규칙). */
+export interface BoardOptions {
+  /** 심을 단어 수 상한. 적을수록 단어가 아닌 채움 글자가 늘어난다 */
+  maxWords?: number;
+  /** 길이 비율 [2음절, 3음절], 나머지는 4음절. 기본 [0.5, 0.35] */
+  mix?: readonly [number, number];
+  /** 남은 틈을 2음절로 메울지. 기본 true */
+  fillGaps?: boolean;
+}
+
 export function generateBoard(
   seed: number,
   cols: number,
   rows: number,
   common: readonly string[],
+  opts: BoardOptions = {},
 ): Board {
+  const [p2, p3] = opts.mix ?? [0.5, 0.35];
+  const enough = Math.min(minPlanted(cols, rows), opts.maxWords ?? Infinity);
   const rand = mulberry32(seed);
   const pick = <T>(list: readonly T[]): T => list[Math.floor(rand() * list.length)]!;
   const byLen = new Map<number, string[]>([2, 3, 4].map((n) => [n, []]));
@@ -60,7 +73,7 @@ export function generateBoard(
   for (let attempt = 0; attempt < 8; attempt++) {
     const board = tryOnce();
     if (!best || board.planted.length > best.planted.length) best = board;
-    if (board.planted.length >= minPlanted(cols, rows)) break;
+    if (board.planted.length >= enough) break;
   }
   return best!;
 
@@ -93,10 +106,10 @@ export function generateBoard(
       return null;
     };
 
-    // 1) 길이를 섞어서 (2음절 50%, 3음절 35%, 4음절 15%) 빈자리에 심는다
-    for (let fails = 0; fails < 40;) {
+    // 1) 길이를 섞어서 (기본 2음절 50%, 3음절 35%, 4음절 15%) 빈자리에 심는다
+    for (let fails = 0; fails < 40 && planted.length < (opts.maxWords ?? Infinity);) {
       const x = rand();
-      const len = x < 0.5 ? 2 : x < 0.85 ? 3 : 4;
+      const len = x < p2 ? 2 : x < p2 + p3 ? 3 : 4;
       const word = freshWord(len);
       const spots = word ? freeSpots(len, len === 4 ? ['h', 'v', 'b'] : ['h', 'v']) : [];
       if (!word || !spots.length) {
@@ -106,7 +119,11 @@ export function generateBoard(
       place(word, pick(spots));
     }
     // 2) 남은 틈을 2음절로 메운다
-    for (let spots = freeSpots(2, ['h', 'v']); spots.length; spots = freeSpots(2, ['h', 'v'])) {
+    for (
+      let spots = opts.fillGaps === false ? [] : freeSpots(2, ['h', 'v']);
+      spots.length && planted.length < (opts.maxWords ?? Infinity);
+      spots = freeSpots(2, ['h', 'v'])
+    ) {
       const word = freshWord(2);
       if (!word) break;
       place(word, pick(spots));

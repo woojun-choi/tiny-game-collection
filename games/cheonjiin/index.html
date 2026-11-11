@@ -106,6 +106,10 @@
             <dd><span id="title-best" class="num">—</span><small>점</small></dd>
           </div>
           <div>
+            <dt>최고 단계</dt>
+            <dd><span id="title-stage" class="num">—</span><small>단계</small></dd>
+          </div>
+          <div>
             <dt>오늘의 퍼즐</dt>
             <dd id="title-daily">—</dd>
             <dd id="title-streak" class="streak" hidden></dd>
@@ -114,6 +118,7 @@
 
         <div class="title-actions">
           <button id="start" class="btn primary" type="button">시작</button>
+          <button id="stage" class="btn" type="button">단계 도전</button>
           <button id="daily" class="btn" type="button">
             오늘의 퍼즐 <span id="daily-no" class="num"></span>
           </button>
@@ -140,6 +145,11 @@
           </div>
         </div>
 
+        <div id="stagebar" class="stagebar" hidden>
+          <span id="stage-label"></span>
+          <span class="stage-track" aria-hidden="true"><i id="stage-fill"></i></span>
+        </div>
+
         <div class="readout" aria-live="polite"><span id="readout"></span></div>
 
         <div class="case">
@@ -157,6 +167,16 @@
         </div>
 
         <p id="hint" class="hint">첫 드래그부터 시간이 흘러요</p>
+
+        <!-- 앱: 남은 10초 이하에서 한 판에 한 번, 광고를 보고 받는다 -->
+        <div id="reward" class="reward" hidden>
+          <button id="reward-hint" class="btn small" type="button">
+            힌트 <span class="ad-tag">광고</span>
+          </button>
+          <button id="reward-time" class="btn small primary" type="button">
+            +30초 <span class="ad-tag">광고</span>
+          </button>
+        </div>
 
         <div class="game-foot">
           <details id="found-box" class="found">
@@ -194,11 +214,18 @@
           <a class="btn web-only" href="https://uzun-choi.com">포트폴리오로</a>
         </div>
 
+        <p class="meta r-tip">단어를 누르면 뜻이 나와요</p>
         <div id="r-groups"></div>
         <div id="r-missed-box" class="group">
           <h2>남은 단어 예시</h2>
           <ul id="r-missed" class="chips missed"></ul>
         </div>
+        <!-- 앱: 보상형 광고를 끝까지 보면 오늘 자정까지 배너를 끈다 -->
+        <p class="ad-free-row">
+          <button id="ad-free" class="sound" type="button" hidden>
+            광고 한 편 보고 오늘 배너 끄기 ▶
+          </button>
+        </p>
       </section>
 
       <footer class="credit">
@@ -207,6 +234,21 @@
       </footer>
 
       <p id="toast" class="toast" role="status"></p>
+
+      <!-- 단어 뜻: 결과 화면의 단어를 누르면 -->
+      <dialog id="meaning" class="sheet meaning" aria-labelledby="m-word">
+        <div class="sheet-head">
+          <h2><span id="m-word"></span> <small id="m-pos"></small></h2>
+          <button id="m-close" class="sound" type="button">닫기</button>
+        </div>
+        <ol id="m-defs" class="defs"></ol>
+        <p id="m-status" class="meta" role="status"></p>
+        <p class="m-source">국립국어원 사전 풀이를 줄여 실음 · CC BY-SA 2.0 KR</p>
+        <div class="m-nav">
+          <button id="m-prev" class="btn small" type="button">◀ 이전 단어</button>
+          <button id="m-next" class="btn small" type="button">다음 단어 ▶</button>
+        </div>
+      </dialog>
 
       <!-- 설정·정보 -->
       <dialog id="settings" class="sheet" aria-labelledby="settings-title">
@@ -218,6 +260,10 @@
           <li>
             <span>소리</span>
             <button id="opt-sound" class="sound" type="button" aria-pressed="false">끔</button>
+          </li>
+          <li id="ad-privacy-row" class="app-only" hidden>
+            <span>광고 개인정보</span>
+            <button id="ad-privacy" class="sound" type="button">설정</button>
           </li>
           <li class="app-only">
             <span>진동</span>

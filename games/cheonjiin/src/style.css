@@ -407,7 +407,8 @@ summary:focus-visible {
 
 /* 첫 화면 기록 칸: 결과 화면의 칸 모양을 빌려 버튼 폭에 맞춘다 */
 .facts.title-facts {
-  width: min(100%, 280px);
+  grid-template-columns: repeat(3, 1fr);
+  width: min(100%, 340px);
   margin-top: 24px;
 }
 
@@ -652,6 +653,41 @@ summary:focus-visible {
   color: var(--ink);
 }
 
+/* 단계 모드: 목표 점수 진행 막대 */
+.stagebar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 6px;
+  font-family: var(--pixel);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.stagebar[hidden] {
+  display: none;
+}
+
+.stage-track {
+  position: relative;
+  width: 96px;
+  height: 10px;
+  border: var(--px) solid var(--ink);
+}
+
+.stage-track i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0;
+  background: var(--ink);
+  transition: width 0.3s steps(4);
+}
+
+.stagebar.done #stage-label::after {
+  content: ' ✓';
+}
+
 .readout {
   display: grid;
   place-items: center;
@@ -683,7 +719,10 @@ summary:focus-visible {
 .case {
   --chrome: 300px;
   position: relative;
-  width: min(100%, calc((100dvh - var(--chrome)) * var(--cols) / var(--rows) * 1.02));
+  width: min(
+    100%,
+    calc((100dvh - var(--chrome) - var(--ad-top, 0px)) * var(--cols) / var(--rows) * 1.02)
+  );
   margin: 0 auto;
   container-type: inline-size;
 }
@@ -793,6 +832,23 @@ summary:focus-visible {
 .chips.missed li {
   border-style: dashed;
   color: var(--muted);
+}
+
+/* 결과 화면 단어 칩은 눌러서 뜻을 본다 */
+.chips button {
+  all: unset;
+  cursor: pointer;
+}
+
+.chips li:has(button:focus-visible) {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.r-tip {
+  width: 100%;
+  margin: 8px 0 0;
+  text-align: center;
 }
 
 /* ---------- 결과 ---------- */
@@ -964,11 +1020,6 @@ summary:focus-visible {
   -webkit-touch-callout: none;
 }
 
-.app .page {
-  padding-top: max(20px, env(safe-area-inset-top));
-  padding-bottom: max(8px, env(safe-area-inset-bottom));
-}
-
 .app .crumb,
 .app .web-only {
   visibility: hidden;
@@ -1097,6 +1148,59 @@ summary:focus-visible {
   font-size: 13px;
 }
 
+/* ---------- 단어 뜻 ---------- */
+.meaning .sheet-head h2 {
+  font-size: 26px;
+}
+
+.meaning .sheet-head small {
+  margin-left: 4px;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.defs {
+  margin: 14px 0 0;
+  padding-left: 20px;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.defs:has(li:only-child) {
+  padding-left: 0;
+  list-style: none;
+}
+
+.m-source {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.m-nav {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.m-nav .btn {
+  flex: 1;
+}
+
+/* 휴대폰: 아래에서 올라오는 시트 */
+@media (max-width: 699px) {
+  .meaning {
+    width: 100%;
+    max-width: none;
+    margin: auto 0 0;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom));
+    border-width: var(--px) 0 0;
+    box-shadow: none;
+  }
+}
+
 .licenses li {
   padding: 4px 0;
   color: var(--muted);
@@ -1181,4 +1285,67 @@ summary:focus-visible {
   .page.wide {
     width: min(100%, 1280px);
   }
+}
+
+/* 단계 막대가 있으면 그만큼 판 높이 계산에서 뺀다 */
+.game:has(#stagebar:not([hidden])) .case {
+  --chrome: 334px;
+}
+
+/* 넓은 판(태블릿 18×9): 키가 커서 글자를 키우고 굵게 */
+.page.wide .board .cap b {
+  font-size: calc(var(--k) * 0.5);
+  font-weight: 700;
+}
+
+/* ---------- 광고(앱) ---------- */
+/* 배너가 위나 아래에 뜨면 그 높이(--ad-top/--ad-bottom)만큼 화면이 비켜 준다 */
+.app .page {
+  padding-top: calc(max(20px, env(safe-area-inset-top)) + var(--ad-top, 0px));
+  padding-bottom: calc(max(8px, env(safe-area-inset-bottom)) + var(--ad-bottom, 0px));
+}
+
+.reward {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.reward[hidden] {
+  display: none;
+}
+
+.ad-tag {
+  margin-left: 4px;
+  padding: 0 4px;
+  border: 1px solid currentColor;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 400;
+  vertical-align: 2px;
+}
+
+/* 힌트: 단어 첫 글자가 깜빡인다 */
+.cap.hinted {
+  animation: hinted 0.5s steps(2) 8;
+  outline: 3px dashed var(--ink);
+  outline-offset: 2px;
+}
+
+@keyframes hinted {
+  50% {
+    background: var(--ink);
+    color: var(--paper);
+  }
+}
+
+.ad-free-row {
+  width: 100%;
+  margin: 32px 0 0;
+  text-align: center;
+}
+
+#ad-free[hidden] {
+  display: none;
 }

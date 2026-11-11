@@ -101,6 +101,12 @@ describe('generateBoard', () => {
     );
   });
 
+  it('단계 옵션: 심는 단어 수 상한을 지킨다', () => {
+    const b = generateBoard(7, 8, 11, COMMON, { maxWords: 12, fillGaps: false });
+    expect(b.planted.length).toBeLessThanOrEqual(12);
+    expect(b.cells.every((c) => c !== null)).toBe(true);
+  });
+
   it('최소 단어 수는 칸의 3분의 1', () => {
     expect(minPlanted(9, 13)).toBe(39);
     expect(minPlanted(18, 9)).toBe(54);

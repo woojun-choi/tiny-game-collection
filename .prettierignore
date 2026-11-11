@@ -1,6 +1,7 @@
 prds/
 package-lock.json
 dist/
+dist-app/
 # 사전 스크립트가 생성하는 파일
 games/*/public/dict/
 

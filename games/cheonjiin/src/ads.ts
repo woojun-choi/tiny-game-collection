@@ -1,0 +1,131 @@
+/**
+ * 광고(앱 빌드에서만). 웹은 비영리라 이 파일이 웹 번들에 들어가지 않는다(main.ts에서 __ADS__일 때만 불러옴).
+ *
+ * - 배너: 결과 화면 아래, 그리고 판이 줄지 않는 화면이면 플레이 중 위쪽. 오늘의 퍼즐·첫 판에는 없음.
+ * - 보상형: 힌트 또는 +30초(한 판 1번), '오늘 하루 배너 끄기'(끝까지 봐야 꺼짐).
+ * - 비맞춤 광고만 요청한다(추적 허용 팝업 없음). 유럽 등은 Google 동의 창(UMP)을 먼저 띄운다.
+ * - 광고 단위 ID는 공개 저장소에 두지 않는다. 앱 빌드 때 .env.app.local에서 읽고, 없으면 Google 테스트 ID.
+ */
+import {
+  AdMob,
+  AdmobConsentStatus,
+  BannerAdPluginEvents,
+  BannerAdPosition,
+  BannerAdSize,
+  RewardAdPluginEvents,
+} from '@capacitor-community/admob';
+
+// Google이 공개한 iOS 테스트 광고 단위
+const TEST_BANNER = 'ca-app-pub-3940256099942544/2934735716';
+const TEST_REWARDED = 'ca-app-pub-3940256099942544/1712485313';
+
+const BANNER_ID = import.meta.env.VITE_ADMOB_BANNER || TEST_BANNER;
+const REWARDED_ID = import.meta.env.VITE_ADMOB_REWARDED || TEST_REWARDED;
+const TESTING = BANNER_ID === TEST_BANNER;
+
+let ready: Promise<boolean> | null = null;
+let privacyOptions = false;
+
+/** 앱 시작 때 한 번. 동의가 필요한 지역이면 동의 창을 먼저 띄운다. 광고를 못 쓰면 false. */
+export function init(): Promise<boolean> {
+  ready ??= (async () => {
+    try {
+      await AdMob.initialize({ initializeForTesting: TESTING });
+      let info = await AdMob.requestConsentInfo();
+      if (info.isConsentFormAvailable && info.status === AdmobConsentStatus.REQUIRED)
+        info = await AdMob.showConsentForm();
+      // 이 enum은 패키지 밖으로 export되지 않아 문자열로 비교한다
+      privacyOptions = String(info.privacyOptionsRequirementStatus) === 'REQUIRED';
+      return info.canRequestAds;
+    } catch {
+      return false;
+    }
+  })();
+  return ready;
+}
+
+/** 설정 화면에 '광고 개인정보 설정'을 보여야 하는지(동의 지역) */
+export async function needsPrivacyOptions(): Promise<boolean> {
+  await init();
+  return privacyOptions;
+}
+
+export function showPrivacyOptions(): Promise<void> {
+  return AdMob.showPrivacyOptionsForm().catch(() => {});
+}
+
+// ---------- 배너 ----------
+
+type Where = 'top' | 'bottom';
+let shown: Where | null = null;
+/** 배너가 차지하는 높이를 CSS 변수로 알려 화면이 그만큼 비켜 준다 */
+function setSpace(where: Where | null, height: number): void {
+  const root = document.documentElement.style;
+  root.setProperty('--ad-top', where === 'top' ? `${height}px` : '0px');
+  root.setProperty('--ad-bottom', where === 'bottom' ? `${height}px` : '0px');
+}
+
+// 자리는 배너를 띄우기 전에 어림값으로 먼저 비워 둔다. 광고가 늦게 떠도 판이 움직이지 않게.
+// 실제 높이가 오면 맞추고, 못 받아도 그 판 동안은 자리를 그대로 둔다.
+void AdMob.addListener(BannerAdPluginEvents.SizeChanged, ({ height }) => {
+  if (shown && height > 0) setSpace(shown, height);
+});
+
+export async function showBanner(where: Where): Promise<void> {
+  if (!(await init())) return;
+  if (shown === where) return;
+  if (shown) await hideBanner();
+  shown = where;
+  setSpace(where, innerWidth >= 700 ? 90 : 60);
+  try {
+    await AdMob.showBanner({
+      adId: BANNER_ID,
+      adSize: BannerAdSize.ADAPTIVE_BANNER,
+      position: where === 'top' ? BannerAdPosition.TOP_CENTER : BannerAdPosition.BOTTOM_CENTER,
+      npa: true,
+      isTesting: TESTING,
+    });
+  } catch {
+    shown = null;
+    setSpace(null, 0);
+  }
+}
+
+export async function hideBanner(): Promise<void> {
+  if (!shown) return;
+  shown = null;
+  setSpace(null, 0);
+  await AdMob.removeBanner().catch(() => {});
+}
+
+// ---------- 보상형 ----------
+
+/**
+ * 보상형 광고 한 편. 광고가 닫힐 때까지 기다린다.
+ * 끝까지 봐서 보상 신호가 왔으면 'rewarded', 중간에 닫으면 'closed', 광고가 없거나 실패하면 'none'.
+ * (iOS 플러그인은 보상을 받을 때만 show 약속을 끝내므로, 닫힘은 이벤트로 기다린다.)
+ */
+export async function rewarded(): Promise<'rewarded' | 'closed' | 'none'> {
+  if (!(await init())) return 'none';
+  let got = false;
+  let finish: (r: 'closed' | 'none') => void = () => {};
+  const done = new Promise<'closed' | 'none'>((r) => (finish = r));
+  const handles = await Promise.all([
+    AdMob.addListener(RewardAdPluginEvents.Rewarded, () => (got = true)),
+    AdMob.addListener(RewardAdPluginEvents.Dismissed, () => finish('closed')),
+    AdMob.addListener(RewardAdPluginEvents.FailedToShow, () => finish('none')),
+  ]);
+  try {
+    await AdMob.prepareRewardVideoAd({ adId: REWARDED_ID, npa: true, isTesting: TESTING });
+    AdMob.showRewardVideoAd().then(
+      () => (got = true),
+      () => finish('none'),
+    );
+    const end = await done;
+    return got ? 'rewarded' : end;
+  } catch {
+    return 'none';
+  } finally {
+    for (const h of handles) void h.remove();
+  }
+}

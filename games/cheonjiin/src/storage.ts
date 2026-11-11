@@ -62,3 +62,42 @@ export function recordDaily(rec: DailyRecord): {
   write(STREAK, streak);
   return { first: true, record: rec, streak };
 }
+
+/** 단계 모드: 다음에 할 단계와 지금까지 통과한 가장 높은 단계(0 = 아직 없음). */
+export interface StageRecord {
+  level: number;
+  best: number;
+}
+
+const STAGE = 'cheonjiin.stage';
+
+export function getStage(): StageRecord {
+  const r = read<StageRecord>(STAGE);
+  return { level: Math.max(1, Number(r?.level) || 1), best: Math.max(0, Number(r?.best) || 0) };
+}
+
+/** 판 결과를 남긴다. 통과했으면 최고 단계를 올리고, 다음 단계를 정한다. */
+export function recordStage(level: number, passed: boolean, next: number): StageRecord {
+  const prev = getStage();
+  const rec = { level: next, best: passed ? Math.max(prev.best, level) : prev.best };
+  write(STAGE, rec);
+  return rec;
+}
+
+/** 첫 판이 끝났는지. 첫 판(과 그 결과 화면)에는 광고를 띄우지 않는다. */
+const PLAYED = 'cheonjiin.played';
+export function hasPlayed(): boolean {
+  return read<boolean>(PLAYED) === true;
+}
+export function markPlayed(): void {
+  write(PLAYED, true);
+}
+
+/** '오늘 하루 배너 끄기': 보상형 광고를 끝까지 본 날 */
+const AD_FREE = 'cheonjiin.adfree';
+export function isAdFree(day: string): boolean {
+  return read<string>(AD_FREE) === day;
+}
+export function setAdFree(day: string): void {
+  write(AD_FREE, day);
+}
