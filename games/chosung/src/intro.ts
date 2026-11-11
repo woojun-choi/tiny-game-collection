@@ -1,7 +1,7 @@
 /**
  * 시작 연출: 원고지 두 칸만 있는 화면에서 격자가 슥슥 그어진 뒤 첫 화면으로 넘어간다.
  * 앱 시작 화면(격자 없는 두 칸)과 같은 크기·같은 자리에서 시작해 이어지게 보인다.
- * 격자는 첫 화면 배경에 연하게 남는다.
+ * 첫 화면으로 넘어가면 격자는 사라진다.
  */
 import { SplashScreen } from '@capacitor/splash-screen';
 import { isApp } from '@tgh/ui/app';
@@ -104,8 +104,3 @@ async function boot(): Promise<void> {
 }
 
 void boot();
-
-// 첫 화면에 남은 격자는 화면 크기가 바뀌면 다시 맞춘다
-addEventListener('resize', () => {
-  if (!running.length) drawGrid();
-});

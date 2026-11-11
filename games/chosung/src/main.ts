@@ -51,8 +51,6 @@ let submitAfterComposition = false;
 
 function show(name: keyof typeof screens): void {
   for (const [key, el] of Object.entries(screens)) el.hidden = key !== name;
-  // 원고지 격자는 첫 화면에서만 보인다
-  document.documentElement.dataset.screen = name;
   window.scrollTo(0, 0);
 }
 

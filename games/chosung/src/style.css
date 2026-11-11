@@ -677,7 +677,7 @@ a:focus-visible {
   display: none;
 }
 
-/* ---------- 원고지 격자 (첫 화면 배경) ---------- */
+/* ---------- 원고지 격자 (시작 연출에서만) ---------- */
 #paper {
   position: fixed;
   inset: 0;
@@ -696,15 +696,11 @@ a:focus-visible {
   stroke-opacity: 0.22;
 }
 
-/* 연출 중에는 아이콘과 같은 진하기, 첫 화면에서는 글 뒤에 깔리게 더 연하게 */
+/* 연출 중에만 보이고, 첫 화면으로 넘어가면 흐려지며 사라진다 */
 :root.intro #paper {
   z-index: 41;
   opacity: 1;
   transition: none;
-}
-
-:root[data-screen='title']:not(.intro) #paper {
-  opacity: 0.5;
 }
 
 /* ---------- 시작 연출: 원고지 두 칸 ---------- */
