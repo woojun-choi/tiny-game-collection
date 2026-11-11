@@ -5,7 +5,8 @@
   "scripts": {
     "fetch": "sh fetch-nikl.sh",
     "build:chosung": "node src/build-chosung.ts",
-    "build:cheonjiin": "node src/build-cheonjiin.ts"
+    "build:cheonjiin": "node src/build-cheonjiin.ts",
+    "build:cheonjiin-defs": "node src/build-cheonjiin-defs.ts"
   },
   "dependencies": {
     "@tgh/hangul": "*"
