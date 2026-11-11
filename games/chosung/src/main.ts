@@ -2,6 +2,7 @@ import { Keyboard } from '@capacitor/keyboard';
 import { buzz, isApp, share } from '@tgh/ui/app';
 import { loadIndex, loadPair, type DictIndex, type PairDict } from './dict';
 import { BONUS_MS, Game, MAX_MS, REASON_TEXT, missedWords, shareText } from './game';
+import { introDone } from './intro';
 import { SPRING, flashInvert, play, reducedMotion } from './motion';
 import { getBest, recordScore } from './storage';
 
@@ -50,6 +51,8 @@ let submitAfterComposition = false;
 
 function show(name: keyof typeof screens): void {
   for (const [key, el] of Object.entries(screens)) el.hidden = key !== name;
+  // 원고지 격자는 첫 화면에서만 보인다
+  document.documentElement.dataset.screen = name;
   window.scrollTo(0, 0);
 }
 
@@ -496,12 +499,14 @@ document.addEventListener('keydown', (e) => {
 // ---------- 시작 ----------
 
 renderTitle();
-play(
-  $('title').querySelector('.logo')!,
-  [
-    { transform: 'scale(0.6)', opacity: 0 },
-    { transform: 'none', opacity: 1 },
-  ],
-  { duration: 400, easing: SPRING },
+void introDone.then(() =>
+  play(
+    $('title').querySelector('.logo')!,
+    [
+      { transform: 'scale(0.6)', opacity: 0 },
+      { transform: 'none', opacity: 1 },
+    ],
+    { duration: 400, easing: SPRING },
+  ),
 );
 index.catch(() => {});

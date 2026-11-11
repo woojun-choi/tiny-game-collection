@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@capacitor/keyboard": "^8.0.6",
+    "@capacitor/splash-screen": "^8.0.2",
     "@fontsource/ibm-plex-mono": "^5.3.0",
     "@tgh/hangul": "*",
     "@tgh/ui": "*",

@@ -676,3 +676,70 @@ a:focus-visible {
 .kb .credit {
   display: none;
 }
+
+/* ---------- 원고지 격자 (첫 화면 배경) ---------- */
+#paper {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  color: var(--fg);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+
+#paper line {
+  stroke: currentColor;
+  stroke-width: var(--grid-w, 2px);
+  stroke-opacity: 0.22;
+}
+
+/* 연출 중에는 아이콘과 같은 진하기, 첫 화면에서는 글 뒤에 깔리게 더 연하게 */
+:root.intro #paper {
+  z-index: 41;
+  opacity: 1;
+  transition: none;
+}
+
+:root[data-screen='title']:not(.intro) #paper {
+  opacity: 0.5;
+}
+
+/* ---------- 시작 연출: 원고지 두 칸 ---------- */
+#intro {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  background: var(--bg);
+}
+
+/* 앱 시작 화면(2732 정사각을 꽉 차게)에서 칸 한 변 260과 같은 크기 */
+#intro .cells {
+  width: calc(2 * 260 / 2732 * max(100vw, 100vh));
+  height: calc(260 / 2732 * max(100vw, 100vh));
+  overflow: visible;
+  color: var(--fg);
+}
+
+.cells rect,
+.cells line {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 26;
+}
+
+.cells text {
+  fill: currentColor;
+  font-family: 'Pretendard Variable', Pretendard, system-ui, sans-serif;
+  font-size: 432px;
+  font-weight: 800;
+  text-anchor: middle;
+}
+
+:root.intro .page {
+  visibility: hidden;
+}
