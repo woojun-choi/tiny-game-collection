@@ -64,9 +64,19 @@ a {
 }
 
 .page {
+  display: flex;
+  flex-direction: column;
   width: min(100%, 560px);
+  min-height: 100dvh;
   margin: 0 auto;
-  padding: 28px 20px 64px;
+  padding: 28px 20px 20px;
+}
+
+/* 화면은 남는 높이를 채운다. 사전 출처·링크는 맨 아래 */
+.screen {
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
 }
 
 /* ---------- 상단 ---------- */
@@ -155,8 +165,14 @@ a:focus-visible {
 }
 
 /* ---------- 타이틀 ---------- */
+/* 위쪽을 넉넉히 비우고, 로고부터 시작 버튼까지 한 덩어리로 가운데 */
+#title {
+  justify-content: center;
+  padding: clamp(40px, 12dvh, 140px) 0 24px;
+}
+
 .logo {
-  margin: 12px 0 0;
+  margin: 0;
   font-size: min(42vw, 220px);
   font-weight: 900;
   line-height: 1;
@@ -195,8 +211,14 @@ a:focus-visible {
 .start-row {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
   margin-top: 32px;
+}
+
+#title-best {
+  color: var(--fg);
+  font-size: 17px;
+  font-weight: 600;
 }
 
 #start {
@@ -210,6 +232,11 @@ a:focus-visible {
 }
 
 /* ---------- 게임 ---------- */
+/* 타이머는 위에서 띄우고, 초성은 남는 높이의 가운데, 입력칸은 그 아래 */
+#game {
+  padding-top: 20px;
+}
+
 .timer {
   position: relative;
   display: flex;
@@ -270,7 +297,10 @@ a:focus-visible {
 }
 
 .stage {
-  margin-top: 40px;
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+  margin-top: 32px;
   padding-top: 12px;
   border-top: var(--line) solid var(--fg);
 }
@@ -285,12 +315,14 @@ a:focus-visible {
 
 .stage-labels .mono {
   color: var(--fg);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
 }
 
 .pair {
-  margin: 32px 0 16px;
+  margin: auto 0;
+  padding-top: 24px;
+  padding-bottom: 16px;
   font-size: min(40vw, 200px);
   font-weight: 900;
   line-height: 1;
@@ -309,7 +341,7 @@ a:focus-visible {
 }
 
 .entry-block {
-  margin-top: 32px;
+  margin-top: 24px;
 }
 
 .entry {
@@ -364,7 +396,8 @@ a:focus-visible {
 }
 
 #chips {
-  margin-top: 24px;
+  min-height: 2.4em;
+  margin-top: 20px;
 }
 
 .chips li {
@@ -381,40 +414,52 @@ a:focus-visible {
 }
 
 /* ---------- 결과 ---------- */
+.result-head {
+  padding-top: clamp(24px, 6dvh, 64px);
+}
+
+.result-head .kicker {
+  font-size: 15px;
+}
+
 .result-title {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  margin: 12px 0 0;
-  padding-bottom: 16px;
+  gap: 16px;
+  margin: 16px 0 0;
+  padding-bottom: 20px;
   border-bottom: var(--line) solid var(--fg);
   line-height: 1;
 }
 
 .r-pair {
-  font-size: 76px;
+  font-size: 104px;
   font-weight: 900;
   letter-spacing: -0.05em;
 }
 
 .score {
-  font-size: 22px;
+  font-size: 26px;
   font-weight: 700;
 }
 
 .score .mono {
-  font-size: 44px;
-}
-
-.score .mono {
   margin-right: 2px;
+  font-size: 56px;
   font-weight: 600;
 }
 
 .result-head .meta {
   justify-content: center;
-  margin-top: 12px;
+  margin-top: 14px;
+  color: var(--fg);
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.result-head .tag {
+  font-size: 13px;
 }
 
 /* 붙어 있는 세그먼트 버튼 */
@@ -450,15 +495,43 @@ a:focus-visible {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  margin-top: 40px;
+  margin-top: 36px;
   padding-top: 16px;
   border-top: var(--line) solid var(--fg);
 }
 
 .section-title {
   margin: 0;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 800;
+}
+
+/* 결과의 단어는 눌러서 뜻을 본다: 칩 전체가 버튼 */
+#result .chips li {
+  padding: 0;
+  font-size: 17px;
+}
+
+#result .chips button {
+  min-height: 40px;
+  padding: 6px 13px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+#result .chips button:active {
+  background: var(--fg);
+  color: var(--bg);
+}
+
+.hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
 }
 
 .toast {
@@ -521,14 +594,28 @@ a:focus-visible {
 }
 
 .credit {
-  margin: 72px 0 0;
+  margin: 32px 0 0;
   color: var(--muted);
   font-size: 12px;
   text-align: center;
 }
 
-/* ---------- 데스크톱: 두 단으로 가로로 펼친다 ---------- */
-@media (min-width: 900px) {
+.credit p {
+  margin: 0;
+}
+
+.credit .links {
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+/* 사전 출처·링크는 첫 화면에만. 게임·결과는 그 높이를 판에 쓴다 */
+.page:has(#title[hidden]) > .credit {
+  display: none;
+}
+
+/* ---------- 데스크톱·iPad 가로: 두 단으로 가로로 펼친다 (세로 화면은 휴대폰처럼 한 단) ---------- */
+@media (min-width: 900px) and (orientation: landscape) {
   .page {
     width: min(100%, 960px);
     padding: 36px 40px 48px;
@@ -577,10 +664,24 @@ a:focus-visible {
     min-width: 52px;
   }
 
-  /* 게임: 초성 위, 입력칸 아래로 가운데 한 줄 */
+  /* 게임: 초성 위, 입력칸 아래로 가운데 한 줄. 넓은 화면에서는 덩어리째 세로 가운데 */
   #game {
+    justify-content: center;
     width: min(100%, 560px);
     margin: 0 auto;
+    padding-bottom: 48px;
+  }
+
+  #game .stage {
+    flex: none;
+  }
+
+  #title {
+    padding: 0;
+  }
+
+  .result-head {
+    padding-top: 0;
   }
 
   #game .timer {
@@ -642,14 +743,48 @@ a:focus-visible {
 }
 
 /* ---------- iOS 앱 ---------- */
+/* 스크롤 없이 한 화면. 키보드가 올라오면 키보드 플러그인이 body 높이를 줄인다(resize: body) */
 .app,
 .app body {
   overscroll-behavior: none;
 }
 
+.app body {
+  height: 100dvh;
+  overflow: hidden;
+}
+
 .app .page {
+  height: 100%;
+  min-height: 0;
   padding-top: max(20px, env(safe-area-inset-top));
   padding-bottom: max(16px, env(safe-area-inset-bottom));
+}
+
+.app .screen {
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+/* 게임: 찾은 단어가 많아지면 위쪽 줄만 보이고 나머지는 잘린다(새 단어가 앞에 붙는다) */
+.app #chips {
+  overflow: hidden;
+}
+
+.app #game .entry-col {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* 결과: 단어 목록만 그 안에서 스크롤. 아래 끝을 흐리게 해 더 있다는 걸 보인다 */
+.app #result > .col:last-child {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  padding-bottom: 24px;
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 28px), transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 28px), transparent);
 }
 
 /* 머리말은 포트폴리오 링크뿐이라 앱에서는 자리째 뺀다 */
@@ -664,8 +799,8 @@ a:focus-visible {
   }
 
   .kb .pair {
-    margin: 12px 0 4px;
-    font-size: min(28vw, 140px);
+    padding: 8px 0 4px;
+    font-size: min(30vw, 150px);
   }
 
   .kb .entry-block {
@@ -738,4 +873,367 @@ a:focus-visible {
 
 :root.intro .page {
   visibility: hidden;
+}
+
+/* ---------- 단어 뜻 시트 ---------- */
+.sheet {
+  width: min(100% - 32px, 480px);
+  max-height: min(80dvh, 560px);
+  padding: 20px;
+  border: var(--line) solid var(--fg);
+  background: var(--bg);
+  color: var(--fg);
+  box-shadow: 8px 8px 0 var(--fg);
+}
+
+.sheet::backdrop {
+  background: rgb(12 10 9 / 0.45);
+}
+
+.sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sheet-head h2 {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.sheet-head small {
+  margin-left: 4px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.btn.small {
+  min-height: 44px;
+  padding: 0 14px;
+  font-size: 15px;
+}
+
+.btn:disabled {
+  border-color: var(--muted);
+  color: var(--muted);
+  cursor: default;
+}
+
+.defs {
+  margin: 16px 0 0;
+  padding-left: 22px;
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+.defs li + li {
+  margin-top: 6px;
+}
+
+.defs:has(li:only-child) {
+  padding-left: 0;
+  list-style: none;
+}
+
+.sheet .meta {
+  justify-content: flex-start;
+}
+
+.sheet .meta:empty {
+  display: none;
+}
+
+.sheet #m-status {
+  margin-top: 16px;
+  font-size: 15px;
+}
+
+.m-source {
+  margin: 16px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.m-nav {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.m-nav .btn {
+  flex: 1;
+}
+
+/* 휴대폰: 아래에서 올라오는 시트 */
+@media (max-width: 699px) {
+  .sheet {
+    width: 100%;
+    max-width: none;
+    margin: auto 0 0;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom));
+    border-width: var(--line) 0 0;
+    box-shadow: none;
+  }
+}
+
+/* ---------- 키가 작은 휴대폰(SE 등): 로고를 줄여 아래 링크와 띄운다 ---------- */
+@media (max-width: 599px) and (max-height: 720px) {
+  #title {
+    padding-top: 24px;
+  }
+
+  .logo {
+    font-size: min(36vw, 160px);
+  }
+
+  .lead {
+    margin-top: 20px;
+  }
+
+  .rules,
+  .start-row {
+    margin-top: 24px;
+  }
+
+  .rules li {
+    padding: 10px 0;
+  }
+}
+
+/* ---------- 큰 화면(iPad): 화면에 맞게 글자·버튼을 키운다 ---------- */
+@media (min-width: 700px) and (min-height: 860px) {
+  .page {
+    width: min(100%, 680px);
+  }
+
+  .logo {
+    font-size: 280px;
+  }
+
+  .lead {
+    margin-top: 40px;
+    font-size: 23px;
+  }
+
+  .rules {
+    margin-top: 40px;
+  }
+
+  .rules li {
+    gap: 16px;
+    padding: 16px 0;
+    font-size: 19px;
+  }
+
+  .start-row {
+    gap: 16px;
+    margin-top: 40px;
+  }
+
+  .btn {
+    min-height: 64px;
+    font-size: 19px;
+  }
+
+  #start {
+    min-height: 72px;
+    font-size: 22px;
+  }
+
+  #title-best {
+    font-size: 21px;
+  }
+
+  .credit {
+    font-size: 14px;
+  }
+
+  .credit .links {
+    font-size: 16px;
+  }
+
+  /* 게임: 화면이 길어 초성과 입력칸이 멀어지지 않게 한 덩어리로 가운데 */
+  #game {
+    justify-content: center;
+    padding: 40px 0 32px;
+  }
+
+  #game .stage {
+    flex: none;
+  }
+
+  .pair {
+    margin: 0;
+    padding: 40px 0 24px;
+  }
+
+  .timer-bar {
+    height: 14px;
+  }
+
+  .timer-num {
+    font-size: 30px;
+  }
+
+  .float {
+    font-size: 18px;
+  }
+
+  .stage {
+    margin-top: 40px;
+    padding-top: 16px;
+  }
+
+  .stage-labels {
+    font-size: 16px;
+  }
+
+  .stage-labels .mono {
+    font-size: 19px;
+  }
+
+  .pair {
+    font-size: 280px;
+  }
+
+  #input {
+    height: 76px;
+    padding: 0 20px;
+    font-size: 32px;
+  }
+
+  #submit {
+    min-width: 120px;
+    min-height: 76px;
+    font-size: 21px;
+  }
+
+  .feedback {
+    margin-top: 14px;
+    font-size: 19px;
+  }
+
+  .chips {
+    gap: 8px;
+  }
+
+  .chips li {
+    padding: 7px 15px;
+    font-size: 20px;
+  }
+
+  /* 결과 */
+  .result-head .kicker {
+    font-size: 18px;
+  }
+
+  .r-pair {
+    font-size: 150px;
+  }
+
+  .score {
+    font-size: 34px;
+  }
+
+  .score .mono {
+    font-size: 80px;
+  }
+
+  .result-head .meta {
+    font-size: 21px;
+  }
+
+  .result-head .tag {
+    font-size: 16px;
+  }
+
+  .actions {
+    margin-top: 40px;
+  }
+
+  .seg {
+    min-height: 68px;
+    font-size: 19px;
+  }
+
+  .group {
+    gap: 18px;
+    margin-top: 44px;
+  }
+
+  .section-title {
+    font-size: 20px;
+  }
+
+  #result .chips li {
+    font-size: 20px;
+  }
+
+  #result .chips button {
+    min-height: 48px;
+    padding: 8px 16px;
+  }
+
+  #result .meta,
+  .hint {
+    font-size: 16px;
+  }
+
+  /* 단어 뜻 */
+  .sheet {
+    width: min(100% - 64px, 600px);
+    padding: 28px;
+  }
+
+  .sheet-head h2 {
+    font-size: 40px;
+  }
+
+  .sheet-head small {
+    font-size: 17px;
+  }
+
+  .defs {
+    font-size: 21px;
+  }
+
+  .btn.small {
+    min-height: 56px;
+    font-size: 18px;
+  }
+
+  .m-source {
+    font-size: 14px;
+  }
+}
+
+/* iPad 가로: 두 단이라 폭을 넓히고, 큰 글자는 단 폭에 맞춘다 */
+@media (min-width: 900px) and (min-height: 860px) and (orientation: landscape) {
+  .page {
+    width: min(100%, 1180px);
+  }
+
+  .split {
+    column-gap: 96px;
+  }
+
+  .logo {
+    font-size: min(20vw, 300px);
+  }
+
+  #game {
+    width: min(100%, 720px);
+  }
+
+  .pair {
+    font-size: 240px;
+  }
+
+  .r-pair {
+    font-size: 130px;
+  }
 }

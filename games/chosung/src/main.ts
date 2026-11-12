@@ -1,27 +1,10 @@
-import { Keyboard } from '@capacitor/keyboard';
-import { buzz, isApp, share } from '@tgh/ui/app';
+import { buzz, share } from '@tgh/ui/app';
 import { loadIndex, loadPair, type DictIndex, type PairDict } from './dict';
 import { BONUS_MS, Game, MAX_MS, REASON_TEXT, missedWords, shareText } from './game';
 import { introDone } from './intro';
+import { lookup, preload } from './meaning';
 import { SPRING, flashInvert, play, reducedMotion } from './motion';
 import { getBest, recordScore } from './storage';
-
-// 앱에서는 웹 전용 머리말(포트폴리오 링크)을 숨기고 안전 영역을 띄운다
-if (isApp) {
-  document.documentElement.classList.add('app');
-  // 핀치 확대는 막고, 노치 아래까지 그린 뒤 안전 영역만큼 띄운다
-  document
-    .querySelector('meta[name="viewport"]')
-    ?.setAttribute(
-      'content',
-      'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content',
-    );
-  // 키보드 위 이전·다음·완료 막대는 칸이 하나뿐이라 자리만 차지한다
-  void Keyboard.setAccessoryBarVisible({ isVisible: false }).catch(() => {});
-  const root = document.documentElement;
-  void Keyboard.addListener('keyboardWillShow', () => root.classList.add('kb'));
-  void Keyboard.addListener('keyboardWillHide', () => root.classList.remove('kb'));
-}
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -50,6 +33,7 @@ let composing = false;
 let submitAfterComposition = false;
 
 function show(name: keyof typeof screens): void {
+  if (name !== 'result' && meaningEl.open) meaningEl.close();
   for (const [key, el] of Object.entries(screens)) el.hidden = key !== name;
   window.scrollTo(0, 0);
 }
@@ -347,10 +331,11 @@ function endGame(): void {
   foundList.replaceChildren(
     ...found.map((w) => {
       const li = document.createElement('li');
-      li.textContent = w;
+      li.append(wordButton(w));
       return li;
     }),
   );
+  preload(pair);
 
   const missed = missedWords(dict.words, new Set(found));
   $('r-missed-title').hidden = missed.length === 0;
@@ -430,29 +415,95 @@ function countUp(el: HTMLElement, to: number, delay: number): void {
   requestAnimationFrame(step);
 }
 
+/** 결과 화면의 단어: 누르면 뜻을 본다 */
+function wordButton(word: string): HTMLButtonElement {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.dataset.word = word;
+  b.textContent = word;
+  return b;
+}
+
 /** 놓친 단어를 한 글자씩 타자 치듯 보여준다. */
 function typeWords(list: HTMLElement, words: string[], delay: number): void {
   const items = words.map((w) => {
     const li = document.createElement('li');
-    li.setAttribute('aria-label', w);
+    const b = wordButton(w);
+    b.setAttribute('aria-label', w);
+    li.append(b);
     list.append(li);
-    return li;
+    return b;
   });
-  if (reducedMotion()) {
-    items.forEach((li, i) => (li.textContent = words[i] ?? ''));
-    return;
-  }
-  items.forEach((li) => (li.style.visibility = 'hidden'));
+  if (reducedMotion()) return;
+  items.forEach((b) => {
+    b.textContent = '';
+    b.style.visibility = 'hidden';
+  });
   let t = delay;
-  items.forEach((li, i) => {
+  items.forEach((b, i) => {
     const w = words[i] ?? '';
-    setTimeout(() => (li.style.visibility = ''), t);
+    setTimeout(() => (b.style.visibility = ''), t);
     [...w].forEach((_, k) => {
-      setTimeout(() => (li.textContent = w.slice(0, k + 1)), t + k * 70);
+      setTimeout(() => (b.textContent = w.slice(0, k + 1)), t + k * 70);
     });
     t += w.length * 70 + 90;
   });
 }
+
+// ---------- 단어 뜻 ----------
+// 결과 화면의 단어를 누르면 아래에서 시트가 올라온다. 이전·다음으로 찾은 단어와 놓친 단어를 차례로 넘겨 본다.
+
+const meaningEl = $<HTMLDialogElement>('meaning');
+let meaningList: string[] = [];
+let meaningAt = 0;
+
+async function showMeaning(at: number): Promise<void> {
+  if (!current) return;
+  const pair = current.pair;
+  meaningAt = at;
+  const word = meaningList[at]!;
+  $('m-word').textContent = word;
+  $('m-pos').textContent = '';
+  $('m-defs').replaceChildren();
+  $('m-status').textContent = '뜻을 불러오는 중…';
+  $<HTMLButtonElement>('m-prev').disabled = at === 0;
+  $<HTMLButtonElement>('m-next').disabled = at === meaningList.length - 1;
+  if (!meaningEl.open) meaningEl.showModal();
+  try {
+    const m = await lookup(pair, word);
+    if (meaningList[meaningAt] !== word) return; // 그사이 다른 단어로 넘어감
+    $('m-pos').textContent = m?.pos ?? '';
+    $('m-defs').replaceChildren(
+      ...(m?.defs ?? []).map((d) => {
+        const li = document.createElement('li');
+        li.textContent = d;
+        return li;
+      }),
+    );
+    $('m-status').textContent = m ? '' : '사전에 풀이가 없는 말이에요';
+  } catch {
+    if (meaningList[meaningAt] === word) $('m-status').textContent = '뜻을 불러오지 못했어요';
+  }
+}
+
+screens.result.addEventListener('click', (e) => {
+  const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('button[data-word]');
+  if (!btn) return;
+  meaningList = [...screens.result.querySelectorAll<HTMLElement>('button[data-word]')].map(
+    (b) => b.dataset.word!,
+  );
+  void showMeaning(meaningList.indexOf(btn.dataset.word!));
+});
+$('m-prev').addEventListener('click', () => void showMeaning(Math.max(0, meaningAt - 1)));
+$('m-next').addEventListener(
+  'click',
+  () => void showMeaning(Math.min(meaningList.length - 1, meaningAt + 1)),
+);
+$('m-close').addEventListener('click', () => meaningEl.close());
+// 시트 밖(어두운 배경)을 누르면 닫는다
+meaningEl.addEventListener('click', (e) => {
+  if (e.target === meaningEl) meaningEl.close();
+});
 
 $('again').addEventListener('click', async () => {
   if (!current) return;
@@ -488,7 +539,7 @@ document.addEventListener('keydown', (e) => {
   if (!screens.title.hidden && !startBtn.disabled) {
     e.preventDefault();
     startBtn.click();
-  } else if (!screens.result.hidden && performance.now() - resultAt > 800) {
+  } else if (!screens.result.hidden && !meaningEl.open && performance.now() - resultAt > 800) {
     e.preventDefault();
     $('again').click();
   }

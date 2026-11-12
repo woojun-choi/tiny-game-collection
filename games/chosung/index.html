@@ -44,7 +44,6 @@
 
       <section id="title" class="screen split">
         <div class="col hero">
-          <p class="kicker mono">No.02 — 초성 게임</p>
           <h1 class="logo" aria-label="ㄱㅅ"><span>ㄱ</span><span>ㅅ</span></h1>
         </div>
         <div class="col">
@@ -131,18 +130,37 @@
             <h2 id="r-missed-title" class="section-title">이런 단어도 있었어요</h2>
             <ul id="r-missed" class="chips missed"></ul>
             <p id="r-coverage" class="meta"></p>
+            <p class="hint">단어를 누르면 뜻을 볼 수 있어요</p>
           </div>
         </div>
       </section>
 
       <footer class="credit">
-        사전: 국립국어원 우리말샘·표준국어대사전·한국어기초사전 ·
-        <a href="https://creativecommons.org/licenses/by-sa/2.0/kr/">CC BY-SA 2.0 KR</a>
-        <br />
         <!-- 전체 주소: 앱에서는 웹뷰 밖(Safari)으로 연다 -->
-        <a href="https://chosung.uzun-choi.com/support.html">도움말</a> ·
-        <a href="https://chosung.uzun-choi.com/privacy.html">개인정보 처리방침</a>
+        <p class="links">
+          <a href="https://chosung.uzun-choi.com/support.html">도움말</a> ·
+          <a href="https://chosung.uzun-choi.com/privacy.html">개인정보 처리방침</a>
+        </p>
+        <p>
+          사전: 국립국어원 우리말샘·표준국어대사전·한국어기초사전 ·
+          <a href="https://creativecommons.org/licenses/by-sa/2.0/kr/">CC BY-SA 2.0 KR</a>
+        </p>
       </footer>
+
+      <!-- 단어 뜻: 결과 화면의 단어를 누르면 -->
+      <dialog id="meaning" class="sheet" aria-labelledby="m-word">
+        <div class="sheet-head">
+          <h2><span id="m-word"></span> <small id="m-pos"></small></h2>
+          <button id="m-close" class="btn small" type="button">닫기</button>
+        </div>
+        <ol id="m-defs" class="defs"></ol>
+        <p id="m-status" class="meta" role="status"></p>
+        <p class="m-source">국립국어원 사전 풀이를 줄여 실음 · CC BY-SA 2.0 KR</p>
+        <div class="m-nav">
+          <button id="m-prev" class="btn small" type="button">← 이전 단어</button>
+          <button id="m-next" class="btn small" type="button">다음 단어 →</button>
+        </div>
+      </dialog>
 
       <p id="toast" class="toast" role="status"></p>
     </div>
