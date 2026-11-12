@@ -132,13 +132,25 @@ function fitWidth(adTop: number): number {
     getComputedStyle(el).position !== 'fixed';
   const root = document.documentElement;
   const nowTop = px(root, '--ad-top') + px(root, '--ad-gap');
-  let used = px(page, 'padding-top') - nowTop + adTop + px(page, 'padding-bottom');
+  // 아래 배너 자리(결과 화면에서 넘어올 때 남아 있음)는 빼고, 홈 인디케이터 여백만 센다
+  let used = px(page, 'padding-top') - nowTop + adTop + Math.max(8, safeBottom());
   for (const el of page.children) if (el !== screens.game && shown(el)) used += outer(el);
   const kids = [...screens.game.children].filter(shown);
   used += px(screens.game, 'padding-top') + px(screens.game, 'row-gap') * (kids.length - 1);
   for (const el of kids) if (el !== caseEl) used += outer(el);
   const ratio = caseEl.offsetWidth / caseEl.offsetHeight;
   return Math.floor((innerHeight - used) * ratio) - 2;
+}
+
+/** 홈 인디케이터 영역 높이 */
+function safeBottom(): number {
+  const probe = document.createElement('div');
+  probe.style.cssText =
+    'position:fixed;visibility:hidden;padding-bottom:env(safe-area-inset-bottom)';
+  document.body.append(probe);
+  const v = parseFloat(getComputedStyle(probe).paddingBottom) || 0;
+  probe.remove();
+  return v;
 }
 
 /** 앱: 플레이 화면의 판 폭을 화면에 맞춘다 */
