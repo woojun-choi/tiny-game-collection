@@ -1,6 +1,6 @@
 /** 선택·점수 규칙. DOM과 무관한 순수 함수만. */
 
-export const GAME_MS = 120_000;
+export const GAME_MS = 90_000;
 export const COMBO_WINDOW_MS = 3_000;
 export const CLEAR_BONUS = 30;
 const BASE: Record<number, number> = { 2: 2, 3: 6, 4: 12 };

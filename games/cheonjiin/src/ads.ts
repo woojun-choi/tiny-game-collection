@@ -2,7 +2,7 @@
  * 광고(앱 빌드에서만). 웹은 비영리라 이 파일이 웹 번들에 들어가지 않는다(main.ts에서 __ADS__일 때만 불러옴).
  *
  * - 배너: 결과 화면 아래, 그리고 판이 줄지 않는 화면이면 플레이 중 위쪽. 오늘의 퍼즐·첫 판에는 없음.
- * - 보상형: 힌트 또는 +30초(한 판 1번), '오늘 하루 배너 끄기'(끝까지 봐야 꺼짐).
+ * - 보상형: 남은 15초 이하에서 힌트 또는 +20초(한 판 1번), '오늘 하루 배너 끄기'(끝까지 봐야 꺼짐).
  * - 비맞춤 광고만 요청한다(추적 허용 팝업 없음). 유럽 등은 Google 동의 창(UMP)을 먼저 띄운다.
  * - 광고 단위 ID는 공개 저장소에 두지 않는다. 앱 빌드 때 .env.app.local에서 읽고, 없으면 Google 테스트 ID.
  */
@@ -58,11 +58,27 @@ export function showPrivacyOptions(): Promise<void> {
 
 type Where = 'top' | 'bottom';
 let shown: Where | null = null;
-/** 배너가 차지하는 높이를 CSS 변수로 알려 화면이 그만큼 비켜 준다 */
+/** 위 배너와 그 아래 메뉴 사이 간격(main.ts의 AD_GAP과 같은 값) */
+const GAP = 10;
+
+/** 배너가 차지하는 높이를 CSS 변수로 알려 화면이 그만큼 비켜 준다. 플레이 화면은 'adspace'를 듣고 판을 다시 맞춘다. */
 function setSpace(where: Where | null, height: number): void {
   const root = document.documentElement.style;
   root.setProperty('--ad-top', where === 'top' ? `${height}px` : '0px');
+  root.setProperty('--ad-gap', where === 'top' ? `${GAP}px` : '0px');
   root.setProperty('--ad-bottom', where === 'bottom' ? `${height}px` : '0px');
+  dispatchEvent(new Event('adspace'));
+}
+
+/** 홈 인디케이터 영역 높이. 아래 배너는 이만큼 내려 화면 맨 아래에 붙인다. */
+function safeBottom(): number {
+  const probe = document.createElement('div');
+  probe.style.cssText =
+    'position:fixed;visibility:hidden;padding-bottom:env(safe-area-inset-bottom)';
+  document.body.append(probe);
+  const v = parseFloat(getComputedStyle(probe).paddingBottom) || 0;
+  probe.remove();
+  return Math.round(v);
 }
 
 // 자리는 배너를 띄우기 전에 어림값으로 먼저 비워 둔다. 광고가 늦게 떠도 판이 움직이지 않게.
@@ -82,6 +98,8 @@ export async function showBanner(where: Where): Promise<void> {
       adId: BANNER_ID,
       adSize: BannerAdSize.ADAPTIVE_BANNER,
       position: where === 'top' ? BannerAdPosition.TOP_CENTER : BannerAdPosition.BOTTOM_CENTER,
+      // 플러그인은 안전 영역 아래 끝에 붙인다. 음수 여백으로 홈 인디케이터 영역까지 내린다.
+      margin: where === 'bottom' ? -safeBottom() : 0,
       npa: true,
       isTesting: TESTING,
     });

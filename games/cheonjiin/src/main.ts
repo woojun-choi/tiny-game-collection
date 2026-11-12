@@ -53,6 +53,8 @@ const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getEleme
 
 // 광고는 앱 빌드에만 있다(__ADS__). 웹 번들에는 이 import가 아예 빠진다.
 const ads = __ADS__ ? import('./ads') : null;
+/** 위 배너와 그 아래 메뉴 사이 간격(ads.ts와 같은 값) */
+const AD_GAP = 10;
 
 const page = document.querySelector<HTMLElement>('.page')!;
 const screens = { title: $('title'), game: $('game'), result: $('result') };
@@ -101,6 +103,7 @@ function show(name: keyof typeof screens): void {
     $('how-card').hidden = true;
     $('how-open').setAttribute('aria-expanded', 'false');
   }
+  fitBoard();
   void placeBanner(name);
   window.scrollTo(0, 0);
 }
@@ -112,21 +115,60 @@ function bannersAllowed(): boolean {
   return !!ads && hasPlayed() && s?.mode !== 'daily' && !isAdFree(todayKey());
 }
 
+/**
+ * 앱: 판 말고 다른 것들의 실제 높이를 재서, 스크롤 없이 화면에 꼭 맞는 판 폭을 구한다.
+ * adTop은 위 배너 자리(간격 포함). 지금 비켜 둔 자리 대신 이 값으로 셈한다.
+ */
+function fitWidth(adTop: number): number {
+  const px = (el: Element, prop: string) =>
+    parseFloat(getComputedStyle(el).getPropertyValue(prop)) || 0;
+  const outer = (el: HTMLElement) =>
+    el.getBoundingClientRect().height + px(el, 'margin-top') + px(el, 'margin-bottom');
+  const shown = (el: Element): el is HTMLElement =>
+    el instanceof HTMLElement &&
+    !el.hidden &&
+    !(el instanceof HTMLDialogElement) &&
+    !['none', 'contents'].includes(getComputedStyle(el).display) &&
+    getComputedStyle(el).position !== 'fixed';
+  const root = document.documentElement;
+  const nowTop = px(root, '--ad-top') + px(root, '--ad-gap');
+  let used = px(page, 'padding-top') - nowTop + adTop + px(page, 'padding-bottom');
+  for (const el of page.children) if (el !== screens.game && shown(el)) used += outer(el);
+  const kids = [...screens.game.children].filter(shown);
+  used += px(screens.game, 'padding-top') + px(screens.game, 'row-gap') * (kids.length - 1);
+  for (const el of kids) if (el !== caseEl) used += outer(el);
+  const ratio = caseEl.offsetWidth / caseEl.offsetHeight;
+  return Math.floor((innerHeight - used) * ratio) - 2;
+}
+
+/** 앱: 플레이 화면의 판 폭을 화면에 맞춘다 */
+function fitBoard(): void {
+  if (!isApp || screens.game.hidden || !s) return;
+  const root = document.documentElement;
+  const top = parseFloat(getComputedStyle(root).getPropertyValue('--ad-top')) || 0;
+  const gap = parseFloat(getComputedStyle(root).getPropertyValue('--ad-gap')) || 0;
+  caseEl.style.setProperty('--fit-w', `${fitWidth(top + gap)}px`);
+}
+addEventListener('resize', fitBoard);
+addEventListener('adspace', fitBoard);
+
 /** 플레이 중 배너는 판이 줄어들지 않는 화면에서만(작은 휴대폰·작은 태블릿 가로는 뺀다) */
 function boardFitsWithBanner(): boolean {
   if (!s) return false;
-  const chrome = parseFloat(getComputedStyle(caseEl).getPropertyValue('--chrome')) || 300;
-  const banner = innerWidth >= 700 ? 90 : 60;
-  const { cols, rows } = s.board;
-  const byHeight = (innerHeight - chrome - banner) * (cols / rows) * 1.02;
-  return byHeight >= caseEl.parentElement!.clientWidth;
+  const banner = (innerWidth >= 700 ? 90 : 60) + AD_GAP;
+  return fitWidth(banner) >= screens.game.clientWidth;
 }
 
 async function placeBanner(name: keyof typeof screens): Promise<void> {
   if (!ads) return;
   const a = await ads;
   const ok = bannersAllowed();
-  $('ad-free').hidden = !(name === 'result' && ok);
+  // 오늘 배너를 꺼 둔 날은 버튼 대신 그렇다고 알려 준다(첫 판·오늘의 퍼즐은 원래 배너가 없어 알리지 않음)
+  const off = hasPlayed() && s?.mode !== 'daily' && isAdFree(todayKey());
+  const btn = $<HTMLButtonElement>('ad-free');
+  btn.hidden = !(name === 'result' && (ok || off));
+  btn.disabled = off;
+  btn.textContent = off ? '오늘은 배너가 꺼져 있어요' : '광고 한 편 보고 오늘 배너 끄기 ▶';
   if (name === 'game' && ok && boardFitsWithBanner()) await a.showBanner('top');
   else if (name === 'result' && ok) await a.showBanner('bottom');
   else await a.hideBanner();
@@ -151,11 +193,13 @@ $('ad-free').addEventListener('click', async () => {
   else toast('지금은 광고가 없어요');
 });
 
-/** 보상형(힌트·+30초): 앱에서만, 오늘의 퍼즐 제외, 남은 10초 이하에서 한 판 1번 */
+/** 보상형(힌트·+20초): 앱에서만, 오늘의 퍼즐 제외, 남은 15초 이하에서 한 판 1번 */
+const REWARD_AT = 15;
+const REWARD_MS = 20_000;
 let rewardUsed = false;
 function maybeOfferReward(secLeft: number): void {
   const box = $('reward');
-  const offer = !!ads && !!s && s.mode !== 'daily' && !rewardUsed && secLeft <= 10;
+  const offer = !!ads && !!s && s.mode !== 'daily' && !rewardUsed && secLeft <= REWARD_AT;
   if (box.hidden === !offer) return;
   box.hidden = !offer;
 }
@@ -174,8 +218,8 @@ async function useReward(kind: 'hint' | 'time'): Promise<void> {
     return;
   }
   if (kind === 'time') {
-    s.ms += 30_000;
-    toast('+30초');
+    s.ms += REWARD_MS;
+    toast(`+${REWARD_MS / 1000}초`);
   } else showHint();
   resume();
 }
@@ -249,7 +293,7 @@ sheet.addEventListener('click', (e) => {
 const dailyBtn = $<HTMLButtonElement>('daily');
 
 function renderTitle(): void {
-  $('limit').textContent = layout() === WIDE ? '2분' : '1분 30초';
+  $('limit').textContent = layout() === WIDE ? '1분 30초' : '1분';
 
   const best = getBest();
   const day = todayKey();
@@ -301,8 +345,8 @@ stageBtn.addEventListener('click', () => void begin('stage', stageBtn));
 
 // ---------- 게임 ----------
 
-/** 판 크기와 제한 시간. 휴대폰(세로)은 작은 판에 짧게, 넓은 가로 화면은 큰 판에 2분 */
-const PHONE = { cols: 8, rows: 11, ms: 90_000 };
+/** 판 크기와 제한 시간. 휴대폰(세로)은 작은 판에 짧게, 넓은 가로 화면은 큰 판에 1분 30초 */
+const PHONE = { cols: 8, rows: 11, ms: 60_000 };
 const WIDE = { cols: 18, rows: 9, ms: GAME_MS };
 
 /** 판이 시작될 때 정하고 바꾸지 않는다 */

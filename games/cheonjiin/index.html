@@ -94,8 +94,8 @@
               <li><b>12</b>점 네 글자</li>
             </ul>
             <p class="rule-note">
-              3초 안에 이어서 맞히면 콤보 · 제한 시간 <span id="limit">1분 30초</span><br />드래그
-              대신 두 키를 차례로 눌러도 돼요
+              3초 안에 이어서 맞히면 콤보 · 제한 시간 <span id="limit">1분</span><br />드래그 대신
+              두 키를 차례로 눌러도 돼요
             </p>
           </div>
         </div>
@@ -141,7 +141,7 @@
           </div>
           <div class="stat right">
             <span class="label">남은 시간</span>
-            <span id="time" class="num" role="timer">2:00</span>
+            <span id="time" class="num" role="timer">1:00</span>
           </div>
         </div>
 
@@ -168,21 +168,20 @@
 
         <p id="hint" class="hint">첫 드래그부터 시간이 흘러요</p>
 
-        <!-- 앱: 남은 10초 이하에서 한 판에 한 번, 광고를 보고 받는다 -->
-        <div id="reward" class="reward" hidden>
-          <button id="reward-hint" class="btn small" type="button">
-            힌트 <span class="ad-tag">광고</span>
-          </button>
-          <button id="reward-time" class="btn small primary" type="button">
-            +30초 <span class="ad-tag">광고</span>
-          </button>
-        </div>
-
         <div class="game-foot">
           <details id="found-box" class="found">
             <summary>찾은 단어 <span id="found-count" class="num">0</span></summary>
             <ul id="found" class="chips"></ul>
           </details>
+          <!-- 앱: 남은 15초 이하에서 한 판에 한 번, 찾은 단어 자리에 광고 보상 버튼이 뜬다 -->
+          <div id="reward" class="reward" hidden>
+            <button id="reward-hint" class="btn small" type="button">
+              힌트 <span class="ad-tag">광고</span>
+            </button>
+            <button id="reward-time" class="btn small primary" type="button">
+              +20초 <span class="ad-tag">광고</span>
+            </button>
+          </div>
           <button id="stop" class="btn small" type="button">그만하기</button>
         </div>
       </section>

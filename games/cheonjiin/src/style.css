@@ -1300,16 +1300,47 @@ summary:focus-visible {
 
 /* ---------- 광고(앱) ---------- */
 /* 배너가 위나 아래에 뜨면 그 높이(--ad-top/--ad-bottom)만큼 화면이 비켜 준다 */
+/* 위 배너 아래엔 간격(--ad-gap)을 둔다. 아래 배너는 화면 맨 아래(홈 인디케이터 위)까지 붙고, 내용은 그 위에서 끝난다 */
+.app {
+  --sat: env(safe-area-inset-top);
+  --sab: env(safe-area-inset-bottom);
+}
+
 .app .page {
-  padding-top: calc(max(20px, env(safe-area-inset-top)) + var(--ad-top, 0px));
-  padding-bottom: calc(max(8px, env(safe-area-inset-bottom)) + var(--ad-bottom, 0px));
+  padding-top: calc(max(20px, var(--sat)) + var(--ad-top, 0px) + var(--ad-gap, 0px));
+  padding-bottom: max(8px, var(--sab), calc(var(--ad-bottom, 0px) + 8px));
+}
+
+/* 앱 플레이 화면: 스크롤 없이 한 화면. 판 폭(--fit-w)은 main.ts가 남은 높이로 정하고, 사전 출처는 설정에 있다 */
+.app .case {
+  width: min(100%, var(--fit-w, 100%));
+}
+
+.app .page:has(#game:not([hidden])) > .credit {
+  display: none;
+}
+
+/* 앱: 찾은 단어는 개수만(목록은 결과 화면에서). 보상 버튼이 뜨면 그 자리를 쓴다 */
+.app .found summary {
+  list-style: none;
+  pointer-events: none;
+}
+
+.app .found summary::-webkit-details-marker {
+  display: none;
+}
+
+.app .found .chips {
+  display: none;
+}
+
+.game-foot:has(.reward:not([hidden])) .found {
+  display: none;
 }
 
 .reward {
   display: flex;
-  justify-content: center;
   gap: 8px;
-  margin-top: 8px;
 }
 
 .reward[hidden] {
@@ -1348,4 +1379,11 @@ summary:focus-visible {
 
 #ad-free[hidden] {
   display: none;
+}
+
+#ad-free:disabled {
+  border-color: transparent;
+  background: none;
+  color: var(--muted);
+  cursor: default;
 }

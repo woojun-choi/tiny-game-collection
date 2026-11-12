@@ -14,16 +14,16 @@ export interface Stage {
 
 // prettier-ignore
 const TABLE: [ms: number, target: number, board: BoardOptions][] = [
-  [90_000, 50, {}],
-  [90_000, 60, { mix: [0.45, 0.38] }],
-  [85_000, 65, { mix: [0.45, 0.38] }],
-  [80_000, 70, { mix: [0.4, 0.4], fillGaps: false, maxWords: 26 }],
-  [80_000, 75, { mix: [0.35, 0.42], fillGaps: false, maxWords: 24 }],
-  [75_000, 75, { mix: [0.3, 0.45], fillGaps: false, maxWords: 23 }],
-  [70_000, 75, { mix: [0.3, 0.45], fillGaps: false, maxWords: 22 }],
-  [65_000, 80, { mix: [0.25, 0.45], fillGaps: false, maxWords: 21 }],
-  [60_000, 80, { mix: [0.25, 0.45], fillGaps: false, maxWords: 20 }],
-  [60_000, 85, { mix: [0.2, 0.45], fillGaps: false, maxWords: 19 }],
+  [60_000, 35, {}],
+  [60_000, 40, { mix: [0.45, 0.38] }],
+  [57_000, 45, { mix: [0.45, 0.38] }],
+  [55_000, 50, { mix: [0.4, 0.4], fillGaps: false, maxWords: 26 }],
+  [55_000, 50, { mix: [0.35, 0.42], fillGaps: false, maxWords: 24 }],
+  [52_000, 50, { mix: [0.3, 0.45], fillGaps: false, maxWords: 23 }],
+  [50_000, 55, { mix: [0.3, 0.45], fillGaps: false, maxWords: 22 }],
+  [48_000, 60, { mix: [0.25, 0.45], fillGaps: false, maxWords: 21 }],
+  [45_000, 60, { mix: [0.25, 0.45], fillGaps: false, maxWords: 20 }],
+  [45_000, 65, { mix: [0.2, 0.45], fillGaps: false, maxWords: 19 }],
 ];
 
 export const MAX_LEVEL = TABLE.length;
