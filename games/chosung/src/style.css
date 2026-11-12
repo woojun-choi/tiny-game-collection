@@ -1237,3 +1237,28 @@ a:focus-visible {
     font-size: 130px;
   }
 }
+
+/* iPad 가로 + 화면 키보드: 남는 높이가 600px 남짓이라 초성을 줄여 찾은 단어까지 보이게 */
+@media (min-width: 700px) and (orientation: landscape) {
+  .kb #game {
+    padding: 16px 0 12px;
+  }
+
+  .kb .stage {
+    margin-top: 20px;
+    padding-top: 10px;
+  }
+
+  .kb .pair {
+    padding: 12px 0 8px;
+    font-size: 150px;
+  }
+
+  .kb .entry-block {
+    margin-top: 12px;
+  }
+
+  .kb #chips {
+    margin-top: 12px;
+  }
+}
