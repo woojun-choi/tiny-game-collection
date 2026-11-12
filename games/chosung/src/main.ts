@@ -3,6 +3,7 @@ import { loadIndex, loadPair, type DictIndex, type PairDict } from './dict';
 import { BONUS_MS, Game, MAX_MS, REASON_TEXT, missedWords, shareText } from './game';
 import { introDone } from './intro';
 import { lookup, preload } from './meaning';
+import { expectKeyboard } from './shell';
 import { SPRING, flashInvert, play, reducedMotion } from './motion';
 import { getBest, recordScore } from './storage';
 
@@ -93,6 +94,7 @@ async function startGame(pair: string): Promise<void> {
   input.value = '';
   renderCount();
   renderTimer();
+  expectKeyboard();
   show('game');
   input.focus();
 
