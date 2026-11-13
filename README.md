@@ -7,7 +7,7 @@
 | #   | 게임         | 한 줄 소개                                            | 주소                    |
 | --- | ------------ | ----------------------------------------------------- | ----------------------- |
 | 1   | 반갈죽       | 드래그로 물체를 정확히 반으로 가르는 정밀 게임        | bangaljuk.uzun-choi.com |
-| 2   | ㄱㅅ         | 초성 두 글자에 맞는 단어를 계속 입력하는 생존 게임    | chosung.uzun-choi.com   |
+| 2   | ㄱㄴ         | 초성 두 글자에 맞는 단어를 계속 입력하는 생존 게임    | chosung.uzun-choi.com   |
 | 3   | 천지인       | 키캡 글자를 드래그로 묶어 단어를 만드는 퍼즐          | cheonjiin.uzun-choi.com |
 | 4   | 열공타자연습 | 내 자료로 암기 타자 연습과 빈칸 문제를 푸는 학습 도구 | yeolgong.uzun-choi.com  |
 
@@ -24,7 +24,7 @@
 - Vite + TypeScript
 - 렌더링: Canvas(반갈죽), DOM(나머지)
 - 입력: Pointer Events, 한글 IME 조합 처리
-- 사전 데이터: 국립국어원 사전 데이터를 빌드 시점에 가공 (ㄱㅅ, 천지인 공용)
+- 사전 데이터: 국립국어원 사전 데이터를 빌드 시점에 가공 (ㄱㄴ, 천지인 공용)
 
 ## 저장소 구조
 
@@ -65,4 +65,4 @@ npm run format           # Prettier
 
 ## 사전 데이터 출처
 
-ㄱㅅ·천지인의 단어 목록(`games/chosung/public/dict/`, `games/cheonjiin/public/dict/`)은 국립국어원 [우리말샘](https://opendict.korean.go.kr)·[표준국어대사전](https://stdict.korean.go.kr)·[한국어기초사전](https://krdict.korean.go.kr)의 표제어를 가공한 것으로, [CC BY-SA 2.0 KR](https://creativecommons.org/licenses/by-sa/2.0/kr/)을 따른다. 원본 XML은 [spellcheck-ko/korean-dict-nikl](https://github.com/spellcheck-ko/korean-dict-nikl) 미러에서 받는다(`npm run fetch -w @tgh/dict-pipeline`).
+ㄱㄴ·천지인의 단어 목록(`games/chosung/public/dict/`, `games/cheonjiin/public/dict/`)은 국립국어원 [우리말샘](https://opendict.korean.go.kr)·[표준국어대사전](https://stdict.korean.go.kr)·[한국어기초사전](https://krdict.korean.go.kr)의 표제어를 가공한 것으로, [CC BY-SA 2.0 KR](https://creativecommons.org/licenses/by-sa/2.0/kr/)을 따른다. 원본 XML은 [spellcheck-ko/korean-dict-nikl](https://github.com/spellcheck-ko/korean-dict-nikl) 미러에서 받는다(`npm run fetch -w @tgh/dict-pipeline`).

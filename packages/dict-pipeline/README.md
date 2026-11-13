@@ -1,11 +1,11 @@
 # dict-pipeline
 
-국립국어원 사전 데이터를 게임용 사전 파일로 가공하는 빌드 스크립트 (ㄱㅅ, 천지인 공용).
+국립국어원 사전 데이터를 게임용 사전 파일로 가공하는 빌드 스크립트 (ㄱㄴ, 천지인 공용).
 
 - 원본 데이터는 `raw/`에 직접 내려받아 둔다(zip은 풀어서). 저장소에는 올리지 않는다(`.gitignore`).
 - 결과물은 각 게임의 `public/dict/`에 생성하고 커밋한다. 배포 환경에는 원본 데이터가 없으므로 Vercel 빌드에서는 이 스크립트를 실행하지 않는다.
 
-## ㄱㅅ
+## ㄱㄴ
 
 ```sh
 npm run build:chosung -w @tgh/dict-pipeline
@@ -23,6 +23,6 @@ npm run build:chosung -w @tgh/dict-pipeline
 npm run build:cheonjiin -w @tgh/dict-pipeline
 ```
 
-- **정답 인정(`words.txt`):** 표준국어대사전·한국어기초사전의 2~4음절 표제어 전부, 그리고 ㄱㅅ와 같은 기준으로 우리말샘의 2음절 표제어. 우리말샘 3~4음절까지 넣으면 gzip 2MB가 넘어서 뺐다(지금 약 1MB).
+- **정답 인정(`words.txt`):** 표준국어대사전·한국어기초사전의 2~4음절 표제어 전부, 그리고 ㄱㄴ과 같은 기준으로 우리말샘의 2음절 표제어. 우리말샘 3~4음절까지 넣으면 gzip 2MB가 넘어서 뺐다(지금 약 1MB).
 - **판 생성(`common.json`):** 한국어기초사전의 초급·중급 명사. 판에 심는 단어는 익숙한 말이어야 한다.
 - 출력: `games/cheonjiin/public/dict/words.txt`, `common.json`

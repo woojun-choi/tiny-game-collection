@@ -2,7 +2,7 @@
  * 천지인 사전 만들기: `npm run build:cheonjiin -w @tgh/dict-pipeline`
  *
  * - 정답 인정(words.txt): 표준국어대사전·한국어기초사전의 2~4음절 표제어 전부,
- *   그리고 ㄱㅅ와 같은 기준으로 우리말샘의 2음절 표제어. 우리말샘 3~4음절까지 넣으면
+ *   그리고 ㄱㄴ과 같은 기준으로 우리말샘의 2음절 표제어. 우리말샘 3~4음절까지 넣으면
  *   두 배 넘게 커져서(gzip 2MB+) 뺐다.
  * - 판 생성(common.json): 한국어기초사전 초급·중급 명사. 판에 심는 단어는 익숙한 말이어야 한다.
  * 출력: games/cheonjiin/public/dict/words.txt, common.json, LICENSE.txt

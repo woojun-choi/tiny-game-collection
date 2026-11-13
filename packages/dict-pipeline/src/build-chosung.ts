@@ -1,5 +1,5 @@
 /**
- * ㄱㅅ 사전 만들기: `npm run build:chosung -w @tgh/dict-pipeline`
+ * ㄱㄴ 사전 만들기: `npm run build:chosung -w @tgh/dict-pipeline`
  *
  * raw/ 안의 파일을 전부 읽는다 (zip은 먼저 풀어둔다).
  * - 한국어기초사전 LMF XML(<LexicalEntry>)은 '흔한 단어'로 순위를 매긴다.

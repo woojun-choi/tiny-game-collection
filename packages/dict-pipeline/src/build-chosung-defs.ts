@@ -1,5 +1,5 @@
 /**
- * ㄱㅅ 단어 뜻 만들기: `npm run build:chosung-defs -w @tgh/dict-pipeline`
+ * ㄱㄴ 단어 뜻 만들기: `npm run build:chosung-defs -w @tgh/dict-pipeline`
  *
  * 이미 만들어 둔 쌍별 사전(games/chosung/public/dict/<쌍>.json)의 단어마다 뜻을 붙인다.
  * 사전과 같은 쌍 단위로 나눠, 결과 화면에서는 그 판의 초성 파일 하나만 받는다.

@@ -1,10 +1,10 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 import { KeyboardResize } from '@capacitor/keyboard';
 
-/** ㄱㅅ iOS 앱. 웹 빌드(games/chosung/dist)를 그대로 싣는다. */
+/** ㄱㄴ iOS 앱. 웹 빌드(games/chosung/dist)를 그대로 싣는다. */
 const config: CapacitorConfig = {
   appId: 'com.uzunchoi.chosung',
-  appName: 'ㄱㅅ',
+  appName: 'ㄱㄴ',
   webDir: '../../games/chosung/dist',
   ios: {
     contentInset: 'never',

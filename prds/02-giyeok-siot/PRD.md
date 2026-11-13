@@ -1,5 +1,7 @@
 # PRD — ㄱㅅ (Giyeok-Siot)
 
+> 2026-11-13: 게임 이름을 ㄱㅅ에서 ㄱㄴ으로 바꿨다. 아래는 처음 기획 그대로 둔다.
+
 > Mini-game #2 of the 초미니게임천국 (Tiny Game Heaven) series
 > Status: Draft v0.1 · Last updated: 2026-11-04
 
