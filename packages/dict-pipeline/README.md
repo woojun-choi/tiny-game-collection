@@ -15,7 +15,7 @@ npm run build:chosung -w @tgh/dict-pipeline
 - **흔한 단어 순위:** 한국어기초사전(LMF XML)이 있으면 어휘 등급(초급 → 중급 → 고급)으로 순위를 매긴다. 결과 화면의 '놓친 단어'는 이 순서로 보여준다.
 - **출제 대상:** 흔한 단어가 25개 이상인 초성 쌍. 기초사전이 없으면 전체 80단어 이상인 쌍.
 - `extra.txt`: 사전에 없는 단어를 직접 보탠다(한 줄에 하나).
-- 출력: `games/chosung/public/dict/index.json`, `<초성 인덱스>-<초성 인덱스>.json` (예: ㄱㅅ → `0-9.json`)
+- 출력: `games/chosung/public/dict/index.json`, `<초성 인덱스>-<초성 인덱스>.json` (예: ㄱㄴ → `0-2.json`)
 
 ## 천지인
 

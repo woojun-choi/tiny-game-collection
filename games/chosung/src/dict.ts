@@ -11,7 +11,7 @@ export interface PairDict {
   set: Set<string>;
 }
 
-/** 파일 이름은 초성 인덱스로 만든다 (ㄱㅅ → 0-9). URL에 한글을 넣지 않기 위해. */
+/** 파일 이름은 초성 인덱스로 만든다 (ㄱㄴ → 0-2). URL에 한글을 넣지 않기 위해. */
 export function pairFile(pair: string): string {
   return [...pair].map((c) => CHOSUNG_LIST.indexOf(c)).join('-');
 }
