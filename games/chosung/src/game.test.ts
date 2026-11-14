@@ -40,11 +40,11 @@ describe('drainRate', () => {
 });
 
 describe('Game', () => {
-  it('adds 3s per valid word, capped at 15s', () => {
+  it('adds 3s per valid word, capped at 60s', () => {
     const g = new Game('ㄱㅅ', dict);
     g.tick(5_000);
     expect(g.submit(' 감사 ')).toEqual({ ok: true, word: '감사' });
-    expect(g.timeLeft).toBe(13_000);
+    expect(g.timeLeft).toBe(58_000);
     g.submit('가수');
     expect(g.timeLeft).toBe(MAX_MS);
     expect(g.found).toEqual(['감사', '가수']);

@@ -1,7 +1,7 @@
 import { getChosungs, isSyllable } from '@tgh/hangul';
 
-export const START_MS = 15_000;
-export const MAX_MS = 15_000;
+export const START_MS = 60_000;
+export const MAX_MS = 60_000;
 export const BONUS_MS = 3_000;
 export const PENALTY_MS = 1_000;
 
