@@ -205,8 +205,8 @@ $('ad-free').addEventListener('click', async () => {
   else toast('지금은 광고가 없어요');
 });
 
-/** 보상형(힌트·+20초): 앱에서만, 오늘의 퍼즐 제외, 남은 15초 이하에서 한 판 1번 */
-const REWARD_AT = 15;
+/** 보상형(힌트·+20초): 앱에서만, 오늘의 퍼즐 제외, 남은 50초 이하에서 한 판 1번 */
+const REWARD_AT = 50;
 const REWARD_MS = 20_000;
 let rewardUsed = false;
 function maybeOfferReward(secLeft: number): void {

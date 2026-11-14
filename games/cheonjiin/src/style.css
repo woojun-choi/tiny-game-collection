@@ -1199,6 +1199,12 @@ summary:focus-visible {
     border-width: var(--px) 0 0;
     box-shadow: none;
   }
+
+  /* 앱: 아래 배너가 떠 있으면 그 위로 올린다. 배너가 홈 인디케이터 자리를 덮으니 그만큼 여백은 뺀다. */
+  .app .meaning {
+    margin-bottom: var(--ad-bottom, 0px);
+    padding-bottom: calc(20px + max(0px, env(safe-area-inset-bottom) - var(--ad-bottom, 0px)));
+  }
 }
 
 .licenses li {
