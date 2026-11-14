@@ -59,11 +59,40 @@ function adsAllowed(): boolean {
   return !!ads && !firstGame && !current?.day;
 }
 
+/**
+ * 플레이 화면: 찾은 단어 첫 줄이 화면 안(키보드 위)에 다 보이는지.
+ * 판이 막 시작될 땐 단어 칸이 비어 배치가 달라서, 보이지 않는 칩 하나를 넣고 잰다.
+ */
+function chipRowFits(): boolean {
+  const probe = document.createElement('li');
+  probe.textContent = '가나';
+  probe.style.visibility = 'hidden';
+  chips.prepend(probe);
+  const page = document.querySelector('.page')!;
+  const end =
+    page.getBoundingClientRect().bottom - parseFloat(getComputedStyle(page).paddingBottom);
+  const fits = probe.getBoundingClientRect().bottom <= end;
+  probe.remove();
+  return fits;
+}
+
+/** 위 배너를 아예 넣지 않는 화면: 작은 아이폰(SE 등), iPad 가로 */
+function noTopBanner(): boolean {
+  return innerHeight < 700 || (innerWidth >= 700 && innerWidth > innerHeight);
+}
+
 async function placeBanner(name: keyof typeof screens): Promise<void> {
   if (!ads) return;
   const a = await ads;
-  if (name === 'result' && adsAllowed()) await a.showBanner();
-  else await a.hideBanner();
+  if (name === 'result' && adsAllowed()) return a.showBanner('bottom');
+  // 플레이 화면 위 배너: 자리를 먼저 비워 보고, 찾은 단어가 한 줄도 안 보이면 넣지 않는다.
+  // 작은 아이폰(SE 등)과 iPad 가로는 재 보지 않고 뺀다.
+  if (name === 'game' && adsAllowed() && !noTopBanner()) {
+    a.setSpace('top', a.bannerHeight());
+    if (chipRowFits()) return a.showBanner('top');
+  }
+  await a.hideBanner();
+  a.setSpace(null, 0);
 }
 
 if (ads)

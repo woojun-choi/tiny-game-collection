@@ -1296,6 +1296,24 @@ a:focus-visible {
   padding-bottom: max(16px, env(safe-area-inset-bottom), calc(var(--ad-bottom, 0px) + 8px));
 }
 
+/* 플레이 화면 위 배너: 안전 영역 바로 아래에 뜨고(--ad-top은 간격 포함), 화면은 그 아래에서 시작한다.
+   자리를 내주는 만큼 타이머·초성 위 여백을 줄인다 */
+.app.ad-top .page {
+  padding-top: calc(env(safe-area-inset-top) + var(--ad-top, 0px));
+}
+
+.ad-top #game {
+  padding-top: 4px;
+}
+
+.ad-top .stage {
+  margin-top: 14px;
+}
+
+.ad-top .pair {
+  padding-top: 0;
+}
+
 /* 브라우저 미리보기(vite --mode app)에서만 배너 자리를 그린다 */
 #ad-slot {
   display: none;
@@ -1306,6 +1324,7 @@ a:focus-visible {
   right: 0;
   bottom: 0;
   left: 0;
+  top: auto;
   z-index: 30;
   display: flex;
   align-items: center;
@@ -1316,6 +1335,14 @@ a:focus-visible {
     repeating-linear-gradient(-45deg, transparent 0 8px, rgb(127 127 127 / 0.1) 8px 16px), var(--bg);
   color: var(--muted);
   font-size: 13px;
+}
+
+.ad-preview.ad-top #ad-slot {
+  top: env(safe-area-inset-top);
+  bottom: auto;
+  height: calc(var(--ad-top) - 10px);
+  border-top: 0;
+  border-bottom: 1px dashed var(--muted);
 }
 
 #continue .btn {
