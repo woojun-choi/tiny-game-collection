@@ -10,6 +10,12 @@ import { getBest, getDaily, getStreak, recordDaily, recordScore } from './storag
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 
+// 광고는 앱 빌드에만 있다(__ADS__). 웹 번들에는 이 import가 아예 빠진다.
+const ads = __ADS__ ? import('./ads') : null;
+/** 광고 보고 이어하기로 받는 시간 */
+const CONTINUE_MS = 15_000;
+const pausedText = document.querySelector<HTMLElement>('#paused p')!;
+
 const screens = { title: $('title'), game: $('game'), result: $('result') };
 const input = $<HTMLInputElement>('input');
 const pairEl = $('pair');
@@ -26,6 +32,10 @@ let current: { pair: string; dict: PairDict; day: string | null } | null = null;
 let game: Game | null = null;
 let nextPair: string | null = null;
 let running = false;
+/** 이번 판에 광고 보고 이어하기를 이미 했는지 */
+let continued = false;
+/** 이번 판이 이 기기의 첫 판인지(첫 판에는 광고를 내지 않는다) */
+let firstGame = false;
 let paused = false;
 let raf = 0;
 /** 결과 화면이 뜬 시각. 판 끝에 치던 Enter가 바로 재시작으로 이어지지 않게 */
@@ -39,7 +49,68 @@ function show(name: keyof typeof screens): void {
   if (name !== 'result' && meaningEl.open) meaningEl.close();
   for (const [key, el] of Object.entries(screens)) el.hidden = key !== name;
   window.scrollTo(0, 0);
+  void placeBanner(name);
 }
+
+// ---------- 광고(앱) ----------
+
+/** 첫 판과 오늘의 초성에는 광고가 없다 */
+function adsAllowed(): boolean {
+  return !!ads && !firstGame && !current?.day;
+}
+
+async function placeBanner(name: keyof typeof screens): Promise<void> {
+  if (!ads) return;
+  const a = await ads;
+  if (name === 'result' && adsAllowed()) await a.showBanner();
+  else await a.hideBanner();
+}
+
+if (ads)
+  void ads.then(async (a) => {
+    if (await a.needsPrivacyOptions()) $('ad-privacy-row').hidden = false;
+  });
+$('ad-privacy').addEventListener('click', () => void ads?.then((a) => a.showPrivacyOptions()));
+
+/** 시간이 다 됐을 때: 앱이면 한 판에 한 번 '광고 보고 이어하기'를 묻고, 아니면 바로 결과 */
+function timeUp(): void {
+  if (!game || !adsAllowed() || continued) {
+    endGame();
+    return;
+  }
+  running = false;
+  cancelAnimationFrame(raf);
+  input.blur();
+  $('continue').hidden = false;
+  $('continue-ad').focus();
+}
+
+$('continue-no').addEventListener('click', () => {
+  $('continue').hidden = true;
+  endGame();
+});
+
+const continueAd = $<HTMLButtonElement>('continue-ad');
+continueAd.addEventListener('click', async () => {
+  if (!ads || !game || continued) return;
+  continueAd.disabled = true;
+  const r = await (await ads).rewarded();
+  continueAd.disabled = false;
+  if (r !== 'rewarded') {
+    showToast(r === 'closed' ? '광고를 끝까지 보면 이어할 수 있어요' : '지금은 광고가 없어요');
+    return;
+  }
+  continued = true;
+  game.timeLeft = CONTINUE_MS;
+  lastWholeSec = Math.ceil(game.timeLeft / 1000);
+  renderTimer();
+  $('continue').hidden = true;
+  // 바로 흐르지 않고 '계속하기'를 눌러야 다시 흐른다. 누르는 순간 키보드도 다시 올라온다.
+  paused = true;
+  pausedText.textContent = `+${CONTINUE_MS / 1000}초`;
+  $('paused').hidden = false;
+  $('resume').focus();
+});
 
 async function pickPair(exclude?: string): Promise<string> {
   const { pairs } = await index;
@@ -93,6 +164,9 @@ dailyBtn.addEventListener('click', () => void begin(dailyBtn, true));
 async function startGame(pair: string, day: string | null = null): Promise<void> {
   const dict = await loadPair(pair);
   current = { pair, dict, day };
+  firstGame = getBest() === null;
+  continued = false;
+  $('continue').hidden = true;
   $('stage-label').textContent = day ? `오늘의 초성 #${dayNumber(day)}` : '초성';
   game = new Game(pair, dict.set);
   running = false;
@@ -162,7 +236,7 @@ function frame(now: number): void {
   lastFrame = now;
   renderTimer();
   if (game.over) {
-    endGame();
+    timeUp();
     return;
   }
   raf = requestAnimationFrame(frame);
@@ -185,6 +259,7 @@ function pause(): void {
   paused = true;
   cancelAnimationFrame(raf);
   input.blur();
+  pausedText.textContent = '일시정지';
   $('paused').hidden = false;
   $('resume').focus();
 }
@@ -292,7 +367,7 @@ function submit(): void {
     }
     renderTimer();
     if (game.over) {
-      endGame();
+      timeUp();
       return;
     }
   }
@@ -556,6 +631,14 @@ $('home').addEventListener('click', () => {
 });
 
 let toastTimer = 0;
+function showToast(text: string): void {
+  const toast = $('toast');
+  toast.textContent = text;
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = window.setTimeout(() => toast.classList.remove('show'), 1500);
+}
+
 $('share').addEventListener('click', async () => {
   if (!game || !current) return;
   try {
@@ -566,11 +649,7 @@ $('share').addEventListener('click', async () => {
   } catch {
     return;
   }
-  const toast = $('toast');
-  toast.textContent = '복사됨';
-  toast.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = window.setTimeout(() => toast.classList.remove('show'), 1500);
+  showToast('복사됨');
 });
 
 // ---------- 키보드로 시작·다시하기 ----------

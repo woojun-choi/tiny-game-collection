@@ -100,6 +100,14 @@
           <p>일시정지</p>
           <button id="resume" class="btn primary" type="button">계속하기</button>
         </div>
+        <!-- 앱: 시간이 다 됐을 때 한 판에 한 번 -->
+        <div id="continue" class="paused" hidden>
+          <p>시간 끝!</p>
+          <button id="continue-ad" class="btn primary" type="button">
+            광고 보고 +15초 이어하기
+          </button>
+          <button id="continue-no" class="btn" type="button">결과 보기</button>
+        </div>
       </section>
 
       <section id="result" class="screen split" hidden>
@@ -145,6 +153,9 @@
         <p class="links">
           <a href="https://chosung.uzun-choi.com/support.html">도움말</a> ·
           <a href="https://chosung.uzun-choi.com/privacy.html">개인정보 처리방침</a>
+          <span id="ad-privacy-row" hidden>
+            · <button id="ad-privacy" class="link" type="button">광고 개인정보 설정</button>
+          </span>
         </p>
         <p>
           사전: 국립국어원 우리말샘·표준국어대사전·한국어기초사전 ·
@@ -168,6 +179,8 @@
       </dialog>
 
       <p id="toast" class="toast" role="status"></p>
+      <!-- 앱: 결과 화면 아래 배너 자리. 실제 배너는 그 위에 네이티브로 뜬다. 브라우저 미리보기에서만 보인다 -->
+      <div id="ad-slot" aria-hidden="true">광고</div>
     </div>
 
     <script type="module" src="/src/boot.ts"></script>

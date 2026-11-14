@@ -1289,3 +1289,45 @@ a:focus-visible {
   margin-top: 12px;
   border-color: transparent;
 }
+
+/* ---------- 광고(앱) ---------- */
+/* 결과 화면 아래 배너가 뜨면 그 높이(--ad-bottom)만큼 내용이 위에서 끝난다 */
+.app .page {
+  padding-bottom: max(16px, env(safe-area-inset-bottom), calc(var(--ad-bottom, 0px) + 8px));
+}
+
+/* 브라우저 미리보기(vite --mode app)에서만 배너 자리를 그린다 */
+#ad-slot {
+  display: none;
+}
+
+.ad-preview #ad-slot {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--ad-bottom);
+  border-top: 1px dashed var(--muted);
+  background:
+    repeating-linear-gradient(-45deg, transparent 0 8px, rgb(127 127 127 / 0.1) 8px 16px), var(--bg);
+  color: var(--muted);
+  font-size: 13px;
+}
+
+#continue .btn {
+  min-width: 240px;
+}
+
+.link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
