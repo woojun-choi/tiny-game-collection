@@ -1,11 +1,12 @@
 import { buzz, share } from '@tgh/ui/app';
 import { loadIndex, loadPair, type DictIndex, type PairDict } from './dict';
 import { BONUS_MS, Game, MAX_MS, REASON_TEXT, missedWords, shareText } from './game';
+import { dailyPair, dayNumber, liveStreak, todayKey } from './daily';
 import { introDone } from './intro';
 import { lookup, preload } from './meaning';
 import { expectKeyboard } from './shell';
 import { SPRING, flashInvert, play, reducedMotion } from './motion';
-import { getBest, recordScore } from './storage';
+import { getBest, getDaily, getStreak, recordDaily, recordScore } from './storage';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -20,7 +21,8 @@ const feedback = $('feedback');
 const startBtn = $<HTMLButtonElement>('start');
 
 let index: Promise<DictIndex> = loadIndex();
-let current: { pair: string; dict: PairDict } | null = null;
+/** day: 오늘의 초성으로 하는 판이면 그 날짜, 아니면 null */
+let current: { pair: string; dict: PairDict; day: string | null } | null = null;
 let game: Game | null = null;
 let nextPair: string | null = null;
 let running = false;
@@ -49,32 +51,49 @@ async function pickPair(exclude?: string): Promise<string> {
 
 // ---------- 타이틀 ----------
 
+const dailyBtn = $<HTMLButtonElement>('daily');
+
 function renderTitle(): void {
+  const day = todayKey();
+  $('daily-no').textContent = `#${dayNumber(day)}`;
   const best = getBest();
+  const done = getDaily(day);
+  const streak = liveStreak(getStreak(), day);
+  const facts = [
+    ...(best !== null ? [`최고 기록 ${best}단어`] : []),
+    ...(done ? [`오늘 ${done.score}단어`] : []),
+    ...(streak > 1 ? [`연속 ${streak}일`] : []),
+  ];
   const el = $('title-best');
-  el.hidden = best === null;
-  if (best !== null) el.textContent = `최고 기록 ${best}단어`;
+  el.hidden = facts.length === 0;
+  el.textContent = facts.join(' · ');
 }
 
-startBtn.addEventListener('click', async () => {
-  startBtn.disabled = true;
+async function begin(btn: HTMLButtonElement, daily: boolean): Promise<void> {
+  btn.disabled = true;
   try {
-    await startGame(await pickPair());
+    if (daily) {
+      const day = todayKey();
+      await startGame(dailyPair((await index).pairs, day), day);
+    } else await startGame(await pickPair());
   } catch {
     index = loadIndex(); // 다음 시도 때 다시 받기
     const err = $('title-error');
     err.hidden = false;
     err.textContent = '사전을 불러오지 못했어요. 다시 시도해 주세요.';
   } finally {
-    startBtn.disabled = false;
+    btn.disabled = false;
   }
-});
+}
+startBtn.addEventListener('click', () => void begin(startBtn, false));
+dailyBtn.addEventListener('click', () => void begin(dailyBtn, true));
 
 // ---------- 게임 ----------
 
-async function startGame(pair: string): Promise<void> {
+async function startGame(pair: string, day: string | null = null): Promise<void> {
   const dict = await loadPair(pair);
-  current = { pair, dict };
+  current = { pair, dict, day };
+  $('stage-label').textContent = day ? `오늘의 초성 #${dayNumber(day)}` : '초성';
   game = new Game(pair, dict.set);
   running = false;
   paused = false;
@@ -320,14 +339,29 @@ function endGame(): void {
   running = false;
   input.blur();
   buzz('heavy');
-  const { pair, dict } = current;
+  const { pair, dict, day } = current;
   const found = game.found;
   const { best, isNew } = recordScore(pair, found.length);
 
   $('r-pair').textContent = pair;
-  $('r-best').textContent = `최고 기록 ${best}단어`;
   const record = $('r-record');
-  record.hidden = !isNew;
+  const dailyEl = $('r-daily');
+  if (day) {
+    // 오늘의 초성: 하루 첫 판만 기록으로 남는다
+    const { first, record: rec, streak } = recordDaily({ day, pair, score: found.length });
+    $('r-kicker').textContent = `오늘의 초성 #${dayNumber(day)}`;
+    $('r-best').textContent = first
+      ? '오늘 기록으로 남았어요'
+      : `오늘 기록 ${rec.score}단어 (첫 판만 남아요)`;
+    record.hidden = true;
+    dailyEl.hidden = false;
+    dailyEl.textContent = `연속 ${streak.count}일 · 최고 ${streak.best}일 · 내일 새 초성`;
+  } else {
+    $('r-kicker').textContent = '결과';
+    $('r-best').textContent = `최고 기록 ${best}단어`;
+    record.hidden = !isNew;
+    dailyEl.hidden = true;
+  }
 
   const foundList = $('r-found');
   foundList.replaceChildren(
@@ -368,7 +402,7 @@ function endGame(): void {
       },
     ),
   );
-  if (isNew) {
+  if (!record.hidden) {
     play(
       record,
       [
@@ -513,14 +547,21 @@ $('again').addEventListener('click', async () => {
 });
 
 $('same').addEventListener('click', () => {
-  if (current) void startGame(current.pair);
+  if (current) void startGame(current.pair, current.day);
+});
+
+$('home').addEventListener('click', () => {
+  renderTitle();
+  show('title');
 });
 
 let toastTimer = 0;
 $('share').addEventListener('click', async () => {
   if (!game || !current) return;
   try {
-    const outcome = await share(shareText(current.pair, game.found));
+    const { day } = current;
+    const daily = day ? { no: dayNumber(day), streak: liveStreak(getStreak(), day) } : undefined;
+    const outcome = await share(shareText(current.pair, game.found, daily));
     if (outcome !== 'copied') return;
   } catch {
     return;

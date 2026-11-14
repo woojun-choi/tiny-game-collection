@@ -92,8 +92,24 @@ export function missedWords(
 
 export const SITE_URL = 'chosung.uzun-choi.com';
 
-/** §3.3 공유 문구. 찾은 단어는 앞 5개만. */
-export function shareText(pair: string, found: readonly string[]): string {
+/**
+ * §3.3 공유 문구. 찾은 단어는 앞 5개만.
+ * 오늘의 초성은 다른 사람이 아직 풀 수 있으니 단어를 빼고 회차와 연속 일수를 적는다.
+ */
+export function shareText(
+  pair: string,
+  found: readonly string[],
+  daily?: { no: number; streak: number },
+): string {
+  if (daily) {
+    return [
+      `ㄱㄴ 오늘의 초성 #${daily.no} — ${pair} ${found.length}단어`,
+      daily.streak > 1 ? `연속 ${daily.streak}일째` : '',
+      SITE_URL,
+    ]
+      .filter(Boolean)
+      .join('\n');
+  }
   const head = found.slice(0, 5).join(' ');
   const words = found.length > 5 ? `${head} …` : head;
   return [`${pair} 초성게임 — ${found.length}단어 생존`, words, SITE_URL]

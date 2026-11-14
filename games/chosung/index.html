@@ -55,6 +55,9 @@
           </ul>
           <div class="start-row">
             <button id="start" class="btn primary" type="button">시작 →</button>
+            <button id="daily" class="btn" type="button">
+              오늘의 초성 <span id="daily-no" class="mono"></span>
+            </button>
             <p id="title-best" class="meta" hidden></p>
           </div>
           <p id="title-error" class="meta" role="alert" hidden></p>
@@ -68,7 +71,7 @@
         </div>
         <div class="col stage">
           <div class="stage-labels">
-            <span>초성</span>
+            <span id="stage-label">초성</span>
             <span id="count" class="mono">0단어</span>
           </div>
           <div class="pair" id="pair" aria-live="off"></div>
@@ -102,7 +105,7 @@
       <section id="result" class="screen split" hidden>
         <div class="col">
           <div class="result-head">
-            <p class="kicker mono">결과</p>
+            <p id="r-kicker" class="kicker">결과</p>
             <h1 class="result-title">
               <span id="r-pair" class="r-pair"></span>
               <span class="score"><span id="r-score" class="mono">0</span>단어</span>
@@ -111,6 +114,7 @@
               <span id="r-best"></span>
               <span id="r-record" class="tag solid" hidden>신기록</span>
             </p>
+            <p id="r-daily" class="meta" hidden></p>
           </div>
 
           <div class="actions" role="group" aria-label="다음 행동">
@@ -118,6 +122,7 @@
             <button id="same" class="seg" type="button">같은 초성으로</button>
             <button id="share" class="seg" type="button">공유</button>
           </div>
+          <button id="home" class="btn small home" type="button">← 처음 화면</button>
         </div>
 
         <div class="col">

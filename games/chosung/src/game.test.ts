@@ -105,4 +105,13 @@ describe('shareText', () => {
   it('omits the word line when nothing was found', () => {
     expect(shareText('ㄱㅅ', [])).toBe('ㄱㅅ 초성게임 — 0단어 생존\nchosung.uzun-choi.com');
   });
+
+  it('daily: hides the words, shows the day number and streak', () => {
+    expect(shareText('ㄱㅅ', ['감사', '가수'], { no: 3, streak: 2 })).toBe(
+      'ㄱㄴ 오늘의 초성 #3 — ㄱㅅ 2단어\n연속 2일째\nchosung.uzun-choi.com',
+    );
+    expect(shareText('ㄱㅅ', ['감사'], { no: 1, streak: 1 })).toBe(
+      'ㄱㄴ 오늘의 초성 #1 — ㄱㅅ 1단어\nchosung.uzun-choi.com',
+    );
+  });
 });
