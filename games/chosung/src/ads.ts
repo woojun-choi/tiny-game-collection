@@ -97,6 +97,12 @@ if (!PREVIEW)
   void AdMob.addListener(BannerAdPluginEvents.SizeChanged, ({ height }) => {
     if (shown && height > 0) setSpace(shown, height);
   });
+// 광고를 못 받아 오면(AdMob 승인 전, 채울 광고 없음 등) 비워 둔 자리를 접는다. 빈 띠를 남기지 않게.
+// 나중에 광고가 들어오면 SizeChanged가 자리를 다시 낸다.
+if (!PREVIEW)
+  void AdMob.addListener(BannerAdPluginEvents.FailedToLoad, () => {
+    if (shown) setSpace(null, 0);
+  });
 
 export async function showBanner(where: Where): Promise<void> {
   if (!(await init())) return;
