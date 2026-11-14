@@ -1358,3 +1358,63 @@ a:focus-visible {
   text-decoration: underline;
   cursor: pointer;
 }
+
+/* ---------- iPad 앱 가로: 플레이 화면을 두 단으로 ---------- */
+/* 왼쪽 초성, 오른쪽 입력칸과 찾은 단어. 화면 키보드가 올라와도 세로가 남아 위에 큰 배너가 들어간다 */
+@media (min-width: 900px) and (orientation: landscape) {
+  .app #game {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    grid-template-columns: 1fr 1fr;
+    align-content: start;
+    column-gap: 56px;
+    padding: 16px 0 12px;
+  }
+
+  .app #game > .timer {
+    grid-column: 1 / -1;
+    margin-top: 0;
+  }
+
+  .app #game > .stage {
+    grid-row: 2;
+    grid-column: 1;
+    justify-content: flex-start;
+    min-height: 0;
+    margin-top: 16px;
+    padding-top: 10px;
+  }
+
+  /* 오른쪽 단도 같은 높이에 선을 긋고, 입력칸은 왼쪽 라벨 줄 아래에서 시작 */
+  .app #game > .entry-col {
+    grid-row: 2;
+    grid-column: 2;
+    min-height: 0;
+    margin-top: 16px;
+    padding-top: 52px;
+    border-top: var(--line) solid var(--fg);
+  }
+
+  .app .pair,
+  .app.kb .pair {
+    margin: 0;
+    padding: 28px 0 0;
+    font-size: 190px;
+  }
+
+  .app .entry-block,
+  .app.kb .entry-block {
+    margin-top: 0;
+  }
+
+  .app.kb #chips {
+    margin-top: 12px;
+  }
+
+  /* 하드웨어 키보드(화면 키보드 없음): 세로가 넉넉하니 덩어리째 가운데 */
+  .app:not(.kb) #game {
+    grid-template-rows: auto auto;
+    align-content: center;
+    padding-bottom: 48px;
+  }
+}

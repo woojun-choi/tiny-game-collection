@@ -76,9 +76,9 @@ function chipRowFits(): boolean {
   return fits;
 }
 
-/** 위 배너를 아예 넣지 않는 화면: 작은 아이폰(SE 등), iPad 가로 */
+/** 위 배너를 아예 넣지 않는 화면: 작은 아이폰(SE 등). iPad 가로는 두 단 배치라 자리가 난다 */
 function noTopBanner(): boolean {
-  return innerHeight < 700 || (innerWidth >= 700 && innerWidth > innerHeight);
+  return innerHeight < 700;
 }
 
 async function placeBanner(name: keyof typeof screens): Promise<void> {
@@ -86,7 +86,7 @@ async function placeBanner(name: keyof typeof screens): Promise<void> {
   const a = await ads;
   if (name === 'result' && adsAllowed()) return a.showBanner('bottom');
   // 플레이 화면 위 배너: 자리를 먼저 비워 보고, 찾은 단어가 한 줄도 안 보이면 넣지 않는다.
-  // 작은 아이폰(SE 등)과 iPad 가로는 재 보지 않고 뺀다.
+  // 작은 아이폰(SE 등)은 재 보지 않고 뺀다.
   if (name === 'game' && adsAllowed() && !noTopBanner()) {
     a.setSpace('top', a.bannerHeight());
     if (chipRowFits()) return a.showBanner('top');
