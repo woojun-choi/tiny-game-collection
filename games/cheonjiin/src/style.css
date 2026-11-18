@@ -1317,6 +1317,13 @@ summary:focus-visible {
   padding-bottom: max(8px, var(--sab), calc(var(--ad-bottom, 0px) + 8px));
 }
 
+/* iPad(가로 고정): 위 버튼이 상태 표시줄 아이콘과 겹치지 않게 조금 더 내린다 */
+@media (min-width: 700px) {
+  .app .page {
+    padding-top: calc(max(20px, var(--sat)) + 16px + var(--ad-top, 0px) + var(--ad-gap, 0px));
+  }
+}
+
 /* 앱 플레이 화면: 스크롤 없이 한 화면. 판 폭(--fit-w)은 main.ts가 남은 높이로 정하고, 사전 출처는 설정에 있다 */
 .app .case {
   width: min(100%, var(--fit-w, 100%));
